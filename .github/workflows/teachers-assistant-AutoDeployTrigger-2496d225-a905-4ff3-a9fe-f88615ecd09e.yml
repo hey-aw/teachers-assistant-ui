@@ -4,19 +4,18 @@ name: Trigger auto deployment for teachers-assistant
 on:
   # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '.github/workflows/teachers-assistant-AutoDeployTrigger-2496d225-a905-4ff3-a9fe-f88615ecd09e.yml'
+      - '**'
+      - '.github/workflows/teachers-assistant-AutoDeployTrigger-2496d225-a905-4ff3-a9fe-f88615ecd09e.yml'
 
-  # Allow manual trigger 
-  workflow_dispatch:      
+  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       id-token: write #This is required for requesting the OIDC JWT Token
       contents: read #Required when GH token is used to authenticate with private repo
 
@@ -35,14 +34,10 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
+          dockerfilePath: Dockerfile
           registryUrl: eddoazurecontainers.azurecr.io
           registryUsername: ${{ secrets.TEACHERSASSISTANT_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.TEACHERSASSISTANT_REGISTRY_PASSWORD }}
           containerAppName: teachers-assistant
           resourceGroup: eddo-container-apps
           imageToBuild: eddoazurecontainers.azurecr.io/teachers-assistant:${{ github.sha }}
-          _buildArgumentsKey_: |
-            _buildArgumentsValues_
-
-
