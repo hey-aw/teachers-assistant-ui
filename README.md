@@ -10,6 +10,14 @@ LANGGRAPH_API_URL=your_langgraph_api_url
 NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=your_assistant_id_or_graph_id 
 ```
 
+Add your Auth0 configuration to the `.env.local` file:
+
+```
+AUTH0_DOMAIN=your_auth0_domain
+AUTH0_CLIENT_ID=your_auth0_client_id
+AUTH0_REDIRECT_URI=your_auth0_redirect_uri
+```
+
 Then, run the development server:
 
 ```bash
