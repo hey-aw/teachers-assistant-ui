@@ -30,10 +30,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <UserProvider>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
+          <div className="flex min-h-screen">
+            <div className="w-64 fixed inset-y-0 left-0 bg-white shadow-sm">
+              <Navbar />
+            </div>
+            <main className="flex-1 ml-64 p-8">
+              {children}
+            </main>
+          </div>
         </UserProvider>
       </body>
     </html>
