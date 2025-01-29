@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import { Thread } from "@assistant-ui/react";
+import {
+  Thread,
+  ThreadWelcome,
+  Composer,
+  type ThreadConfig,
+} from "@assistant-ui/react";
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 
@@ -37,9 +42,22 @@ export function MyAssistant() {
   });
 
   return (
-    <Thread
-      runtime={runtime}
-      assistantMessage={{ components: { Text: MarkdownText } }}
-    />
+    <Thread.Root
+      className="mx-auto max-w-2xl mt-10"
+      config={{
+        runtime: runtime,
+        assistantMessage: { components: { Text: MarkdownText } },
+      }}
+    >
+      <Thread.Viewport>
+        <Thread.Messages />
+        <Thread.FollowupSuggestions />
+      </Thread.Viewport>
+      <Thread.ViewportFooter>
+        <Thread.ScrollToBottom />
+        <Composer />
+      </Thread.ViewportFooter>
+    </Thread.Root>
   );
 }
+
