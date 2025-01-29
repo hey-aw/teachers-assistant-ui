@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pnpm-lockfile
+        name: PNPM Lockfile Check
+        entry: bash -c 'pnpm install --lockfile-only'
+        language: system
+        files: package.json
+        pass_filenames: false 

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check if package.json was modified
+if git diff --cached --name-only | grep -q "package.json"; then
+  echo "📦 Updating pnpm lockfile..."
+  pnpm install --lockfile-only
+  git add pnpm-lock.yaml
+fi 
