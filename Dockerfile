@@ -8,8 +8,8 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies without frozen lockfile
-RUN pnpm install --prod
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
