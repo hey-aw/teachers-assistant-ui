@@ -37,9 +37,11 @@ export function MyAssistant() {
   });
 
   return (
-    <Thread
-      runtime={runtime}
-      assistantMessage={{ components: { Text: MarkdownText } }}
-    />
+    <div className="pt-[40px] h-[calc(100vh-40px)] flex flex-col overflow-hidden">
+      <Thread
+        runtime={runtime}
+        assistantMessage={{ components: { Text: MarkdownText } }}
+      />
+    </div>
   );
 }
