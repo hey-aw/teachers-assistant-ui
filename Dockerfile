@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-# Install pnpm
+# Enable pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /usr/src/app
@@ -8,11 +8,14 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Install dependencies without frozen lockfile
+RUN pnpm install --prod
 
 # Copy the rest of the application
 COPY . .
+
+# Build the application
+RUN pnpm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
