@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@auth0/nextjs-auth0/client';
+import Image from 'next/image';
 
 export default function AuthButton() {
     const { user, error, isLoading } = useUser();
@@ -11,7 +12,16 @@ export default function AuthButton() {
     if (user) {
         return (
             <div className="flex items-center gap-4">
-                <span>Welcome, {user.name}!</span>
+                <span className="hidden sm:block">Welcome, {user.nickname || user.name}!</span>
+                {user.picture && (
+                    <Image
+                        src={user.picture}
+                        alt={'User avatar'}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full"
+                    />
+                )}
                 <a
                     href="/api/auth/logout"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
