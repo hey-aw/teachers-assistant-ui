@@ -63,8 +63,3 @@ jobs:
         run: |
           echo "Waiting for container to be ready..."
           sleep 60
-
-      - name: Perform post-deploy health check
-        run: |
-          echo "Performing health check..."
-          curl -f http://<your-app-url>/api/healthcheck || exit 1
