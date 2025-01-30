@@ -24,6 +24,12 @@ jobs:
       - name: Checkout to the branch
         uses: actions/checkout@v2
 
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm test
+
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -44,5 +50,3 @@ jobs:
           imageToBuild: eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
-
-
