@@ -86,4 +86,31 @@ describe("API Route Handler", () => {
         });
         expect(global.fetch).not.toHaveBeenCalled();
     });
+
+    it("should include assistant_id in the request body", async () => {
+        const req = new NextRequest("http://localhost:3000/runs/stream", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ message: "test" }),
+        });
+
+        await POST(req);
+
+        const fetchCalls = (global.fetch as jest.Mock).mock.calls;
+        expect(fetchCalls.length).toBe(1);
+
+        const [url, options] = fetchCalls[0];
+        expect(url).toBe("https://test.langgraph.app/runs/stream");
+        expect(options.method).toBe("POST");
+        expect(options.headers["x-api-key"]).toBe("test-api-key");
+
+        const bodyText = await (options.body as Blob).text();
+        const bodyJson = JSON.parse(bodyText);
+        expect(bodyJson).toEqual({
+            message: "test",
+            assistant_id: "test-assistant-id",
+        });
+    });
 });

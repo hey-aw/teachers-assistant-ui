@@ -1,38 +1,49 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
-    const apiKey = process.env.API_KEY;
+const apiKey = process.env.LANGSMITH_API_KEY;
+const apiUrl = process.env.LANGGRAPH_API_URL;
+const assistantId = process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID;
 
-    const response = await fetch(apiUrl, {
-        method: req.method,
-        headers: {
-            ...Object.fromEntries(req.headers.entries()),
-            "x-api-key": apiKey as string,
-        } as HeadersInit,
-    });
-
-    const data = await response.json();
-
-    return NextResponse.json(data);
-}
+const requestSchema = z.object({
+  method: z.string(),
+  headers: z.record(z.string(), z.string()),
+  body: z.string().optional(),
+});
 
 export async function POST(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
-    const apiKey = process.env.API_KEY;
+  const { pathname } = new URL(req.url);
+  const isStreamEndpoint = pathname.endsWith("/runs/stream");
 
-    const response = await fetch(apiUrl, {
-        method: req.method,
-        headers: {
-            ...Object.fromEntries(req.headers.entries()),
-            "x-api-key": apiKey as string,
-        } as HeadersInit,
-        body: req.body,
-    });
+  let requestBody;
+  try {
+    requestBody = await req.json();
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Invalid JSON in request body" },
+      { status: 400 }
+    );
+  }
 
-    const data = await response.json();
+  if (isStreamEndpoint) {
+    requestBody.assistant_id = assistantId;
+  }
 
-    return NextResponse.json(data);
+  const modifiedBody = JSON.stringify(requestBody);
+
+  const response = await fetch(`${apiUrl}${pathname}`, {
+    method: req.method,
+    headers: {
+      ...Object.fromEntries(req.headers),
+      "x-api-key": apiKey,
+      "content-type": "application/json",
+    },
+    body: modifiedBody,
+  });
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }

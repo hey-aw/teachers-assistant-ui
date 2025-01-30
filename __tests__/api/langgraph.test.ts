@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe("LangGraph API Route Handler", () => {
-    it.skip("should add assistant_id to /runs/stream requests when missing", async () => {
+    it("should add assistant_id to /runs/stream requests when missing", async () => {
         // Mock the fetch response
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             status: 200,
@@ -59,7 +59,7 @@ describe("LangGraph API Route Handler", () => {
         });
     });
 
-    it.skip("should not modify assistant_id if already present", async () => {
+    it("should not modify assistant_id if already present", async () => {
         const EXISTING_ASSISTANT_ID = "existing_assistant_id";
 
         // Mock the fetch response
@@ -93,7 +93,7 @@ describe("LangGraph API Route Handler", () => {
         expect(bodyJson.assistant_id).toBe(EXISTING_ASSISTANT_ID);
     });
 
-    it.skip("should not modify non-stream endpoint requests", async () => {
+    it("should not modify non-stream endpoint requests", async () => {
         // Mock the fetch response
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             status: 200,
@@ -122,4 +122,4 @@ describe("LangGraph API Route Handler", () => {
         // Verify body wasn't modified
         expect(options.body).toBe(JSON.stringify(originalBody));
     });
-}); 
+});
