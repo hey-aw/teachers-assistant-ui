@@ -6,27 +6,6 @@
     "configurations": [
         {
             "type": "node",
-            "name": "vscode-jest-tests.v2",
-            "request": "launch",
-            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/react-scripts",
-            "args": [
-                "test",
-                "--env=jsdom",
-                "--runInBand",
-                "--watchAll=false",
-                "--testNamePattern",
-                "${jest.testNamePattern}",
-                "--runTestsByPath",
-                "${jest.testFile}"
-            ],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "protocol": "inspector",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true
-        },
-        {
-            "type": "node",
             "name": "vscode-jest-tests.v2.langgraph",
             "request": "launch",
             "args": [
