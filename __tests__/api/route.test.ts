@@ -19,7 +19,7 @@ describe("API Route Handler", () => {
     });
 
     it("should handle JSON requests to /runs/stream and add assistant_id", async () => {
-        const req = new NextRequest("http://localhost:3000/api/runs/stream", {
+        const req = new NextRequest("http://localhost:3000/runs/stream", {
             method: "POST",
             headers: {
                 "content-type": "application/json",
@@ -49,7 +49,7 @@ describe("API Route Handler", () => {
         const formData = new FormData();
         formData.append("file", new Blob(["test"]), "test.txt");
 
-        const req = new NextRequest("http://localhost:3000/api/upload", {
+        const req = new NextRequest("http://localhost:3000/upload", {
             method: "POST",
             body: formData,
         });
@@ -69,7 +69,7 @@ describe("API Route Handler", () => {
     });
 
     it("should return 400 for invalid JSON on /runs/stream endpoint", async () => {
-        const req = new NextRequest("http://localhost:3000/api/runs/stream", {
+        const req = new NextRequest("http://localhost:3000/runs/stream", {
             method: "POST",
             headers: {
                 "content-type": "application/json",
