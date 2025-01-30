@@ -1,125 +1,190 @@
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/[..._path]/route";
 
-// Mock environment variables
-const MOCK_API_KEY = "test_api_key";
-const MOCK_API_URL = "https://api.example.com";
-const MOCK_ASSISTANT_ID = "test_assistant_id";
+describe("LangGraph Configuration Tests", () => {
+    const originalEnv = process.env;
 
-beforeEach(() => {
-    // Setup environment variables
-    process.env.LANGCHAIN_API_KEY = MOCK_API_KEY;
-    process.env.LANGGRAPH_API_URL = MOCK_API_URL;
-    process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID = MOCK_ASSISTANT_ID;
+    beforeEach(() => {
+        jest.resetModules();
+        process.env = { ...originalEnv };
+    });
 
-    // Mock fetch
-    global.fetch = jest.fn();
-});
+    afterEach(() => {
+        process.env = originalEnv;
+        jest.clearAllMocks();
+    });
 
-afterEach(() => {
-    jest.resetAllMocks();
-});
+    describe("Local Development Setup", () => {
+        beforeEach(() => {
+            // Setup local development environment variables
+            process.env.LANGGRAPH_API_URL = "http://localhost:8000";
+            process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID = "local-graph-id";
+            delete process.env.LANGCHAIN_API_KEY;
+            delete process.env.LANGGRAPH_ASSISTANT_ID;
 
-describe("LangGraph API Route Handler", () => {
-    it.skip("should add assistant_id to /runs/stream requests when missing", async () => {
-        // Mock the fetch response
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            status: 200,
-            statusText: "OK",
-            headers: new Headers(),
-            body: new ReadableStream(),
+            // Mock fetch with a successful response
+            global.fetch = jest.fn().mockResolvedValue(new Response(null, {
+                status: 200,
+                statusText: "OK",
+                headers: new Headers({
+                    "content-type": "application/json"
+                })
+            }));
         });
 
-        // Create a request without assistant_id
-        const request = new NextRequest(
-            new URL("http://localhost:3000/api/runs/stream"),
-            {
+        it("should forward requests to local LangGraph Studio", async () => {
+            const mockBody = JSON.stringify({ message: "test" });
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
                 method: "POST",
-                body: JSON.stringify({
-                    some_param: "value"
-                })
-            }
-        );
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: mockBody,
+            });
 
-        await POST(request);
+            // Mock the text() method to return the body
+            jest.spyOn(request, 'text').mockResolvedValue(mockBody);
 
-        // Verify fetch was called with the correct parameters
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const [url, options] = fetchCall;
+            await POST(request);
 
-        // Check URL
-        expect(url).toBe(`${MOCK_API_URL}/runs/stream`);
+            // Verify fetch was called with correct local URL
+            expect(global.fetch).toHaveBeenCalledTimes(1);
+            const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+            expect(url).toBe("http://localhost:8000/runs/stream");
+            expect(options.headers["x-api-key"]).toBeFalsy();
+        });
 
-        // Parse the body to verify assistant_id was added
-        const bodyJson = JSON.parse(options.body);
-        expect(bodyJson).toEqual({
-            some_param: "value",
-            assistant_id: MOCK_ASSISTANT_ID
+        it.skip("should inject local assistant ID when missing", async () => {
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ message: "test" }),
+            });
+
+            await POST(request);
+
+            const [_, options] = (global.fetch as jest.Mock).mock.calls[0];
+            const bodyJson = JSON.parse(options.body);
+            expect(bodyJson.assistant_id).toBe("local-graph-id");
         });
     });
 
-    it.skip("should not modify assistant_id if already present", async () => {
-        const EXISTING_ASSISTANT_ID = "existing_assistant_id";
+    describe("Cloud Deployment Setup", () => {
+        beforeEach(() => {
+            // Setup cloud deployment environment variables
+            process.env.LANGCHAIN_API_KEY = "test-api-key";
+            process.env.LANGGRAPH_API_URL = "https://api.langgraph.com";
+            process.env.LANGGRAPH_ASSISTANT_ID = "cloud-graph-id";
+            delete process.env.NEXT_PUBLIC_LANGGRAPH_API_URL;
+            delete process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID;
 
-        // Mock the fetch response
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            status: 200,
-            statusText: "OK",
-            headers: new Headers(),
-            body: new ReadableStream(),
+            // Mock fetch
+            global.fetch = jest.fn();
         });
 
-        // Create a request with existing assistant_id
-        const request = new NextRequest(
-            new URL("http://localhost:3000/api/runs/stream"),
-            {
+        it("should forward requests to LangGraph Cloud with API key", async () => {
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
                 method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ message: "test" }),
+            });
+
+            await POST(request);
+
+            // Verify fetch was called with correct cloud URL and API key
+            expect(global.fetch).toHaveBeenCalledTimes(1);
+            const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+            expect(url).toBe("https://api.langgraph.com/runs/stream");
+            expect(options.headers["x-api-key"]).toBe("test-api-key");
+        });
+
+        it.skip("should inject cloud assistant ID when missing", async () => {
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ message: "test" }),
+            });
+
+            // Mock fetch to return a successful response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                status: 200,
+                json: async () => ({ success: true }),
+            });
+
+            const response = await POST(request);
+
+            // Verify the response status is 200
+            expect(response.status).toBe(200);
+
+            const [_, options] = (global.fetch as jest.Mock).mock.calls[0];
+            const bodyJson = JSON.parse(options.body);
+            expect(bodyJson.assistant_id).toBe("cloud-graph-id");
+        });
+
+        it("should preserve existing assistant ID", async () => {
+            const existingAssistantId = "existing-assistant-id";
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
                 body: JSON.stringify({
-                    some_param: "value",
-                    assistant_id: EXISTING_ASSISTANT_ID
-                })
-            }
-        );
+                    message: "test",
+                    assistant_id: existingAssistantId
+                }),
+            });
 
-        await POST(request);
+            await POST(request);
 
-        // Verify fetch was called with the correct parameters
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const [_, options] = fetchCall;
-
-        // Parse the body to verify assistant_id wasn't modified
-        const bodyJson = JSON.parse(options.body);
-        expect(bodyJson.assistant_id).toBe(EXISTING_ASSISTANT_ID);
+            const [_, options] = (global.fetch as jest.Mock).mock.calls[0];
+            const bodyJson = JSON.parse(options.body);
+            expect(bodyJson.assistant_id).toBe(existingAssistantId);
+        });
     });
 
-    it.skip("should not modify non-stream endpoint requests", async () => {
-        // Mock the fetch response
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-            status: 200,
-            statusText: "OK",
-            headers: new Headers(),
-            body: new ReadableStream(),
+    describe("Error Handling", () => {
+        beforeEach(() => {
+            process.env.LANGGRAPH_API_URL = "https://api.langgraph.com";
+            global.fetch = jest.fn();
         });
 
-        const originalBody = { some_param: "value" };
+        it("should handle missing API key in cloud deployment", async () => {
+            delete process.env.LANGCHAIN_API_KEY;
 
-        // Create a request to a different endpoint
-        const request = new NextRequest(
-            new URL("http://localhost:3000/api/other/endpoint"),
-            {
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
                 method: "POST",
-                body: JSON.stringify(originalBody)
-            }
-        );
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ message: "test" }),
+            });
 
-        await POST(request);
+            await POST(request);
 
-        // Verify fetch was called with the correct parameters
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const [_, options] = fetchCall;
+            const [_, options] = (global.fetch as jest.Mock).mock.calls[0];
+            expect(options.headers["x-api-key"]).toBe("");
+        });
 
-        // Verify body wasn't modified
-        expect(options.body).toBe(JSON.stringify(originalBody));
+        it("should handle invalid JSON in request body", async () => {
+            const request = new NextRequest("http://localhost:3000/api/runs/stream", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: "invalid json",
+            });
+
+            const response = await POST(request);
+            expect(response.status).toBe(400);
+
+            const data = await response.json();
+            expect(data.error).toBe("Invalid JSON in request body");
+        });
     });
 }); 
