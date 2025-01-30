@@ -1,5 +1,8 @@
 FROM node:lts-alpine
 
+ARG KEY1
+ARG KEY2
+
 # Enable pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -26,6 +29,9 @@ EXPOSE 3000
 # Use non-root user
 RUN chown -R node /usr/src/app
 USER node
+
+ENV KEY1=${KEY1}
+ENV KEY2=${KEY2}
 
 # Start the application
 CMD ["pnpm", "start"]

@@ -43,7 +43,7 @@ jobs:
         uses: Azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655
         with:
           appSourcePath: ${{ github.workspace }}
-          dockerfilePath: _dockerfilePath_
+          dockerfilePath: Dockerfile
           registryUrl: eddoazurecontainers.azurecr.io
           registryUsername: ${{ secrets.TEACHERSEDDOAI_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.TEACHERSEDDOAI_REGISTRY_PASSWORD }}
@@ -51,7 +51,7 @@ jobs:
           resourceGroup: eddo-container-apps
           imageToBuild: eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.sha }}
           buildArguments: |
-            _buildArgumentsValues_
+            KEY1=value1 KEY2=value2
 
       - name: Wait for container to be ready
         run: |
