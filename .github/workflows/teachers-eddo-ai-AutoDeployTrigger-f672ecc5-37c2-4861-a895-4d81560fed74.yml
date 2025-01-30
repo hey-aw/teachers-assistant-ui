@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build Docker image
+        run: docker build -t my-app .
+
+      - name: Validate Docker build
+        run: docker run --rm my-app
+
       - name: Run tests
         run: pnpm test
 
