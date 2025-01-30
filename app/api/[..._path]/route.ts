@@ -1,35 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-    let body: any;
-    try {
-        body = await req.json();
-    } catch (error) {
-        return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), { status: 400 });
-    }
-
-    if (req.nextUrl.pathname === "/runs/stream") {
-        if (!body.assistant_id) {
-            body.assistant_id = process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID;
-        }
-    }
-
-    const apiUrl = process.env.LANGGRAPH_API_URL + req.nextUrl.pathname.replace("/api", "");
-    const apiKey = process.env.LANGCHAIN_API_KEY;
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
+    const apiKey = process.env.API_KEY;
 
     const response = await fetch(apiUrl, {
         method: req.method,
         headers: {
             ...Object.fromEntries(req.headers.entries()),
-            "x-api-key": apiKey,
-        },
+            "x-api-key": apiKey as string,
+        } as HeadersInit,
+    });
+
+    const data = await response.json();
+
+    return NextResponse.json(data);
+}
+
+export async function POST(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
+    const apiKey = process.env.API_KEY;
+
+    const response = await fetch(apiUrl, {
+        method: req.method,
+        headers: {
+            ...Object.fromEntries(req.headers.entries()),
+            "x-api-key": apiKey as string,
+        } as HeadersInit,
         body: req.body,
     });
 
-    const responseBody = await response.text();
-    return new Response(responseBody, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-    });
+    const data = await response.json();
+
+    return NextResponse.json(data);
 }
