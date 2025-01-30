@@ -50,4 +50,4 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
     expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
   });
-}); 
+});
