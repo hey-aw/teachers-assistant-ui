@@ -55,16 +55,3 @@ jobs:
           imageToBuild: eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.sha }}
           buildArguments: |
             KEY1=value1 KEY2=value2
-
-      - name: Wait for container to be ready
-        run: |
-          echo "Waiting for container to be ready..."
-          sleep 60
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: |
-            build
-            coverage
