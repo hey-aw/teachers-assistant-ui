@@ -6,4 +6,7 @@ if git diff --cached --name-only | grep -q "package.json"; then
   echo "📦 Updating pnpm lockfile..."
   pnpm install --lockfile-only
   git add pnpm-lock.yaml
-fi 
+fi
+
+# Run tests before committing code
+pnpm test

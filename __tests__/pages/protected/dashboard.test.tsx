@@ -1,3 +1,4 @@
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import Dashboard from '@/app/protected/dashboard/page';
 import { getSession } from '@auth0/nextjs-auth0';

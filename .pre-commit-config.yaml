@@ -7,3 +7,9 @@ repos:
         language: system
         files: package.json
         pass_filenames: false 
+      - id: run-tests
+        name: Run Tests
+        entry: pnpm test
+        language: system
+        files: .
+        pass_filenames: false

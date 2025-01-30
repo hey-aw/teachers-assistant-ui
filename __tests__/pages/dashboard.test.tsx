@@ -1,3 +1,4 @@
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { getSession } from '@auth0/nextjs-auth0';
 import { redirect } from 'next/navigation';
@@ -45,4 +46,4 @@ describe('DashboardPage', () => {
     expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
     expect(container.textContent).toContain(JSON.stringify(mockUser, null, 2));
   });
-}); 
+});

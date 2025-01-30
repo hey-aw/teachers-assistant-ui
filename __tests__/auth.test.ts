@@ -1,3 +1,4 @@
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { handleAuth } from '@auth0/nextjs-auth0';
 
 // Mock the Auth0 SDK
@@ -29,4 +30,4 @@ describe('Auth Handler', () => {
 
     expect(mockHandler).toHaveBeenCalledWith(request);
   });
-}); 
+});
