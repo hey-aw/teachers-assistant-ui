@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { Response, Request, Headers } from 'node-fetch';
+import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
 
 // Mock Auth0 environment variables
 process.env = {
@@ -23,6 +24,13 @@ jest.mock('@auth0/nextjs-auth0', () => ({
 global.Response = Response as unknown as typeof globalThis.Response;
 global.Request = Request as unknown as typeof globalThis.Request;
 global.Headers = Headers as unknown as typeof globalThis.Headers;
+
+// Add Web Streams API to global
+Object.assign(global, {
+  ReadableStream,
+  WritableStream,
+  TransformStream
+});
 
 if (typeof window === 'undefined') {
   const { TextEncoder, TextDecoder } = require('util');

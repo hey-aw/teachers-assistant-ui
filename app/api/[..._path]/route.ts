@@ -29,15 +29,60 @@ async function handleRequest(req: NextRequest, method: string) {
     };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      options.body = await req.text();
+      // First check if this is a /runs/stream endpoint and if we have JSON content
+      const isRunsStreamEndpoint = path.includes("/runs/stream");
+      const contentType = req.headers.get("content-type") || "";
+      const isJsonContent = contentType.includes("application/json");
+
+      if (isRunsStreamEndpoint && isJsonContent) {
+        let bodyText;
+        try {
+          bodyText = await req.text();
+          const bodyJson = JSON.parse(bodyText);
+          // Only inject assistant_id if it's not already present
+          if (!bodyJson.assistant_id) {
+            bodyJson.assistant_id = process.env.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID;
+          }
+          const jsonString = JSON.stringify(bodyJson);
+          options.body = jsonString;
+          // Set content-type to ensure the server knows it's JSON
+          options.headers = {
+            ...options.headers,
+            'content-type': 'application/json',
+          };
+        } catch (e) {
+          // Don't proceed with the fetch if JSON parsing fails
+          return new NextResponse(
+            JSON.stringify({ error: "Invalid JSON in request body" }),
+            {
+              status: 400,
+              headers: {
+                'content-type': 'application/json',
+                ...getCorsHeaders()
+              }
+            }
+          );
+        }
+      } else {
+        // For non-JSON content or other endpoints, pass through the body as-is
+        const formData = await req.formData();
+        const file = formData.get("file") as Blob;
+        options.body = file;
+        // Preserve the original content-type header
+        const contentType = req.headers.get("content-type");
+        if (contentType) {
+          options.headers = {
+            ...options.headers,
+            'content-type': contentType,
+          };
+        }
+      }
     }
 
     console.log({ url, path, queryString, options });
 
-    const res = await fetch(
-      `${process.env["LANGGRAPH_API_URL"]}/${path}${queryString}`,
-      options
-    );
+    const targetUrl = `${process.env["LANGGRAPH_API_URL"]}/${path}${queryString}`;
+    const res = await fetch(targetUrl, options);
 
     return new NextResponse(res.body, {
       status: res.status,
@@ -47,9 +92,29 @@ async function handleRequest(req: NextRequest, method: string) {
         ...getCorsHeaders(),
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
+    if (e instanceof SyntaxError) {
+      return new NextResponse(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        {
+          status: 400,
+          headers: {
+            'content-type': 'application/json',
+            ...getCorsHeaders()
+          }
+        }
+      );
+    }
+    return new NextResponse(
+      JSON.stringify({ error: e.message }),
+      {
+        status: e.status ?? 500,
+        headers: {
+          'content-type': 'application/json',
+          ...getCorsHeaders()
+        }
+      }
+    );
   }
 }
 
