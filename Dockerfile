@@ -15,7 +15,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Run tests
-RUN pnpm run test
+RUN pnpm test
 
 # Build the application
 RUN pnpm run build
