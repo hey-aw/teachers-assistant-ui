@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { UserProvider } from '@auth0/nextjs-auth0/client';
 import Navbar from "@/components/Navbar";
 import "./globals.css";
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../i18n';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +31,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <UserProvider>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </UserProvider>
+        <I18nextProvider i18n={i18n}>
+          <UserProvider>
+            <Navbar />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {children}
+            </main>
+          </UserProvider>
+        </I18nextProvider>
       </body>
     </html>
   );
