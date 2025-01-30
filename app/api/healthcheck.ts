@@ -16,8 +16,12 @@ const healthCheck = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     res.status(200).json(healthStatus);
-  } catch (error) {
-    res.status(500).json({ status: 'unhealthy', error: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ status: 'unhealthy', error: error.message });
+    } else {
+      res.status(500).json({ status: 'unhealthy', error: 'An unknown error occurred' });
+    }
   }
 };
 

@@ -26,6 +26,9 @@ importers:
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
+      i18next:
+        specifier: ^24.2.2
+        version: 24.2.2(typescript@5.7.3)
       next:
         specifier: ^15.1.6
         version: 15.1.6(@babel/core@7.26.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
