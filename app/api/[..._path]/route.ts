@@ -1,38 +1,88 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
-    const apiKey = process.env.API_KEY;
+export const runtime = "edge";
 
-    const response = await fetch(apiUrl, {
-        method: req.method,
-        headers: {
-            ...Object.fromEntries(req.headers.entries()),
-            "x-api-key": apiKey as string,
-        } as HeadersInit,
-    });
-
-    const data = await response.json();
-
-    return NextResponse.json(data);
+function getCorsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "*",
+  };
 }
 
-export async function POST(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const apiUrl = `${process.env.API_BASE_URL}${req.nextUrl.pathname}?${searchParams.toString()}`;
-    const apiKey = process.env.API_KEY;
+async function handleRequest(req: NextRequest, method: string) {
+  try {
+    const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
+    const url = new URL(req.url);
+    const searchParams = new URLSearchParams(url.search);
+    searchParams.delete("_path");
+    searchParams.delete("nxtP_path");
+    const queryString = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
 
-    const response = await fetch(apiUrl, {
-        method: req.method,
-        headers: {
-            ...Object.fromEntries(req.headers.entries()),
-            "x-api-key": apiKey as string,
-        } as HeadersInit,
-        body: req.body,
+    const options: RequestInit = {
+      method,
+      headers: {
+        "x-api-key": process.env["LANGCHAIN_API_KEY"] || "",
+      },
+    };
+
+    if (["POST", "PUT", "PATCH"].includes(method)) {
+      options.body = await req.text();
+    }
+
+    const res = await fetch(
+      `${process.env["LANGGRAPH_API_URL"]}/${path}${queryString}`,
+      options,
+    );
+
+    return new NextResponse(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: {
+        ...res.headers,
+        ...getCorsHeaders(),
+      },
     });
-
-    const data = await response.json();
-
-    return NextResponse.json(data);
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      return new NextResponse(
+        JSON.stringify({ error: e.message }),
+        {
+          status: (e as { status?: number }).status ?? 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...getCorsHeaders(),
+          },
+        },
+      );
+    }
+    return new NextResponse(
+      JSON.stringify({ error: "Unknown error" }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          ...getCorsHeaders(),
+        },
+      },
+    );
+  }
 }
+
+export const GET = (req: NextRequest) => handleRequest(req, "GET");
+export const POST = (req: NextRequest) => handleRequest(req, "POST");
+export const PUT = (req: NextRequest) => handleRequest(req, "PUT");
+export const PATCH = (req: NextRequest) => handleRequest(req, "PATCH");
+export const DELETE = (req: NextRequest) => handleRequest(req, "DELETE");
+
+// Add a new OPTIONS handler
+export const OPTIONS = () => {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...getCorsHeaders(),
+    },
+  });
+};
