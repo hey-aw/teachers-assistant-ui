@@ -33,7 +33,7 @@ describe("API Route Handler", () => {
         expect(fetchCalls.length).toBe(1);
 
         const [url, options] = fetchCalls[0];
-        expect(url).toBe("https://test.langgraph.app/runs/stream");
+        expect(url).toBe(process.env.LANGGRAPH_API_URL + "/runs/stream");
         expect(options.method).toBe("POST");
         expect(options.headers["x-api-key"]).toBe("test-api-key");
 
