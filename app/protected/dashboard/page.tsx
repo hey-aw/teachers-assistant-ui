@@ -1,8 +1,9 @@
+'use client';
+
 import { getSession } from '@auth0/nextjs-auth0';
 import { redirect } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-'use client';
 function DashboardContent({ user }) {
     const { t } = useTranslation(undefined, {
         useSuspense: false
