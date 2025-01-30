@@ -40,7 +40,7 @@ jobs:
           subscription-id: ${{ secrets.TEACHERSEDDOAI_AZURE_SUBSCRIPTION_ID }}
 
       - name: Build and push container image to registry
-        uses: Azure/container-apps-deploy-action@5f5f4c5
+        uses: Azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655
         with:
           appSourcePath: ${{ github.workspace }}
           dockerfilePath: _dockerfilePath_
