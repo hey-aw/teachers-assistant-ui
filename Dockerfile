@@ -35,7 +35,3 @@ ENV KEY2=${KEY2}
 
 # Start the application
 CMD ["pnpm", "start"]
-
-# Start of build validation step
-RUN docker build -t my-app .
-RUN docker run --rm my-app
