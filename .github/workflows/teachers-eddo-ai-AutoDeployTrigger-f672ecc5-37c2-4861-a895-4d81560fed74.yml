@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout to the branch
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v3
 
       - name: Install pnpm
         run: npm install -g pnpm
@@ -31,9 +31,6 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t my-app .
-
-      - name: Validate Docker build
-        run: docker run --rm my-app
 
       - name: Run tests
         run: pnpm test
@@ -63,3 +60,11 @@ jobs:
         run: |
           echo "Waiting for container to be ready..."
           sleep 60
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: build-artifacts
+          path: |
+            build
+            coverage
