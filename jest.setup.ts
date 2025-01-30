@@ -1,6 +1,27 @@
 import '@testing-library/jest-dom';
 import { Response, Request, Headers } from 'node-fetch';
 import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+// Initialize i18next for tests
+i18next
+  .use(initReactI18next)
+  .init({
+    lng: 'en',
+    resources: {
+      en: {
+        translation: {
+          'protected_dashboard': 'Protected Dashboard',
+          'welcome': 'Welcome'
+        }
+      }
+    },
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 
 // Mock Auth0 environment variables
 process.env = {
