@@ -18,9 +18,7 @@ describe("API Route Handler", () => {
         }));
     });
 
-    // @TODO: Fix JSON parsing issues with request body
-    // Current issue: Body parsing is not working as expected with the mock Request object
-    it.skip("should handle JSON requests to /runs/stream and add assistant_id", async () => {
+    it("should handle JSON requests to /runs/stream and add assistant_id", async () => {
         const req = new NextRequest("http://localhost:3000/api/runs/stream", {
             method: "POST",
             headers: {
@@ -47,9 +45,7 @@ describe("API Route Handler", () => {
         });
     });
 
-    // @TODO: Fix form data handling in test environment
-    // Current issue: FormData is not properly serialized in the test environment
-    it.skip("should handle non-JSON requests without modification", async () => {
+    it("should handle non-JSON requests without modification", async () => {
         const formData = new FormData();
         formData.append("file", new Blob(["test"]), "test.txt");
 
@@ -63,7 +59,7 @@ describe("API Route Handler", () => {
         const fetchCalls = (global.fetch as jest.Mock).mock.calls;
         expect(fetchCalls.length).toBe(1);
 
-        const [url, options] = fetchCall[0];
+        const [url, options] = fetchCalls[0];
         expect(url).toBe("https://test.langgraph.app/upload");
         expect(options.method).toBe("POST");
         expect(options.headers["x-api-key"]).toBe("test-api-key");
@@ -72,8 +68,7 @@ describe("API Route Handler", () => {
         expect(bodyText).toContain("test");
     });
 
-    // This test is working and should remain active
-    it.skip("should return 400 for invalid JSON on /runs/stream endpoint", async () => {
+    it("should return 400 for invalid JSON on /runs/stream endpoint", async () => {
         const req = new NextRequest("http://localhost:3000/api/runs/stream", {
             method: "POST",
             headers: {
@@ -91,4 +86,4 @@ describe("API Route Handler", () => {
         });
         expect(global.fetch).not.toHaveBeenCalled();
     });
-}); 
+});
