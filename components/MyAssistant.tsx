@@ -3,12 +3,11 @@
 import { useRef } from "react";
 import {
   Thread,
-  ThreadWelcome,
   Composer,
-  type ThreadConfig,
 } from "@assistant-ui/react";
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
 
@@ -16,6 +15,7 @@ const MarkdownText = makeMarkdownText();
 
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
+  const { user } = useUser();
   const runtime = useLangGraphRuntime({
     threadId: threadIdRef.current,
     stream: async (messages, { command }) => {
@@ -28,6 +28,7 @@ export function MyAssistant() {
         threadId,
         messages,
         command,
+        userId: user?.email_verified ? user.email : null
       });
     },
     onSwitchToNewThread: async () => {
