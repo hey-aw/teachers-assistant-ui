@@ -29,6 +29,7 @@ export const sendMessage = async (params: {
   threadId: string;
   messages?: LangChainMessage[];
   command?: LangGraphCommand | undefined;
+  userId?: string | null;
 }) => {
   const client = createClient();
   return client.runs.stream(
@@ -37,11 +38,17 @@ export const sendMessage = async (params: {
     {
       input: params.messages?.length
         ? {
-            messages: params.messages,
-          }
+          messages: params.messages,
+        }
         : null,
       command: params.command,
       streamMode: ["messages", "updates"],
+      config: {
+        configurable: {
+          user_id: params.userId,
+          thread_id: params.threadId,
+        },
+      },
     }
   );
 };
