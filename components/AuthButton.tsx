@@ -3,6 +3,7 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 
 export default function AuthButton() {
     const { user, error, isLoading } = useUser();
@@ -16,13 +17,15 @@ export default function AuthButton() {
             <div className="flex items-center gap-4">
                 <span className="hidden sm:block">{t('welcome_user', { name: user.nickname || user.name })}</span>
                 {user.picture && (
-                    <Image
-                        src={user.picture}
-                        alt={'User avatar'}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full"
-                    />
+                    <Link href="/profile" className="hover:opacity-80 transition-opacity">
+                        <Image
+                            src={user.picture}
+                            alt={'User avatar'}
+                            width={32}
+                            height={32}
+                            className="w-8 h-8 rounded-full"
+                        />
+                    </Link>
                 )}
                 <a
                     href="/api/auth/logout"
