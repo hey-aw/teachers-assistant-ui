@@ -8,6 +8,7 @@ import {
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { useUser } from '@auth0/nextjs-auth0/client';
+import { MemorySaver } from "langgraph.checkpoint.memory"; // P161b
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
 
@@ -16,6 +17,7 @@ const MarkdownText = makeMarkdownText();
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
   const { user } = useUser();
+  const memory = new MemorySaver(); // Paf6d
   const runtime = useLangGraphRuntime({
     threadId: threadIdRef.current,
     stream: async (messages, { command }) => {
@@ -40,6 +42,7 @@ export function MyAssistant() {
       threadIdRef.current = threadId;
       return { messages: state.values.messages };
     },
+    memory, // Pd412
   });
 
   return (
@@ -61,4 +64,3 @@ export function MyAssistant() {
     </Thread.Root>
   );
 }
-
