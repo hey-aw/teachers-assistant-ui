@@ -98,7 +98,7 @@ jobs:
             --name teachers-eddo-ai-pr-${{ github.event.pull_request.number }} \
             --resource-group eddo-container-apps \
             --image eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.event.pull_request.head.sha }} \
-            --registry-login-server eddoazurecontainers.azurecr.io \
+            --registry-server eddoazurecontainers.azurecr.io \
             --registry-username ${{ secrets.TEACHERSEDDOAI_REGISTRY_USERNAME }} \
             --registry-password ${{ secrets.TEACHERSEDDOAI_REGISTRY_PASSWORD }} \
             --ingress external \
