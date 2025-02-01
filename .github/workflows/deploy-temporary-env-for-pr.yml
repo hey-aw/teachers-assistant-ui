@@ -55,6 +55,9 @@ jobs:
           echo "::add-mask::$AUTH0_CLIENT_SECRET"
           echo "Environment variables set successfully."
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Install Dependencies
         run: pnpm install
 
