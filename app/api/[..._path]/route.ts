@@ -14,7 +14,7 @@ function getCorsHeaders() {
 async function handleRequest(req: NextRequest, method: string) {
   try {
     // Get the access token using Edge-compatible method
-    const { accessToken } = await getAccessToken(req, undefined);
+    const { accessToken } = await getAccessToken(req, NextResponse.next());
 
     if (!accessToken) {
       return new NextResponse(
@@ -51,7 +51,7 @@ async function handleRequest(req: NextRequest, method: string) {
     }
 
     const res = await fetch(
-      `${process.env["LANGGRAPH_API_URL"]}/${path}${queryString}`,
+      `${process.env["LANGGRAPH_API_URL"] || "https://api.langgraph.com"}/${path}${queryString}`,
       options,
     );
 
