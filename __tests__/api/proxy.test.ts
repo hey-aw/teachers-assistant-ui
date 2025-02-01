@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST, PUT, PATCH, DELETE, OPTIONS } from '@/app/api/[..._path]/route';
+import dotenv from 'dotenv';
 
-// Mock environment variables
-const MOCK_API_KEY = 'test-api-key';
-const MOCK_API_URL = 'https://api.example.com';
+// Load environment variables from .env.test file
+dotenv.config({ path: '.env.test' });
 
 beforeEach(() => {
-    process.env.LANGCHAIN_API_KEY = MOCK_API_KEY;
-    process.env.LANGGRAPH_API_URL = MOCK_API_URL;
-
     // Reset fetch mock
     global.fetch = jest.fn();
 });
@@ -49,11 +46,11 @@ describe('API Route Handler', () => {
             await GET(req);
 
             expect(global.fetch).toHaveBeenCalledWith(
-                `${MOCK_API_URL}/test?param=value`,
+                `${process.env.LANGGRAPH_API_URL}/test?param=value`,
                 expect.objectContaining({
                     method: 'GET',
                     headers: expect.objectContaining({
-                        'x-api-key': MOCK_API_KEY,
+                        'x-api-key': process.env.LANGCHAIN_API_KEY,
                     }),
                 })
             );
@@ -71,12 +68,12 @@ describe('API Route Handler', () => {
             await POST(req);
 
             expect(global.fetch).toHaveBeenCalledWith(
-                `${MOCK_API_URL}/test`,
+                `${process.env.LANGGRAPH_API_URL}/test`,
                 expect.objectContaining({
                     method: 'POST',
                     body: requestBody,
                     headers: expect.objectContaining({
-                        'x-api-key': MOCK_API_KEY,
+                        'x-api-key': process.env.LANGCHAIN_API_KEY,
                     }),
                 })
             );
@@ -115,7 +112,7 @@ describe('API Route Handler', () => {
             await GET(req);
 
             expect(global.fetch).toHaveBeenCalledWith(
-                `${MOCK_API_URL}/test?a=1&b=2`,
+                `${process.env.LANGGRAPH_API_URL}/test?a=1&b=2`,
                 expect.any(Object)
             );
         });
