@@ -1,0 +1,87 @@
+name: Deploy Temporary Environment for PR
+
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - opened
+      - synchronize
+      - reopened
+      - closed  # Tear down environment on PR close
+
+  workflow_dispatch:
+
+jobs:
+  deploy-or-teardown:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write # Needed for commenting on PRs
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Docker Image
+        run: docker build -t my-app .
+
+      - name: Run Tests
+        run: pnpm test
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.TEACHERSEDDOAI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.TEACHERSEDDOAI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.TEACHERSEDDOAI_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set PR Environment Variables
+        run: |
+          echo "PR_ENV_NAME=teachers-eddo-ai-pr-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "DEPLOY_URL=https://${PR_ENV_NAME}.azurecontainerapps.io" >> $GITHUB_ENV
+
+      - name: Deploy Container App (if PR is open)
+        if: github.event.action != 'closed'
+        run: |
+          az containerapp create \
+            --name $PR_ENV_NAME \
+            --resource-group eddo-container-apps \
+            --image eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.event.pull_request.head.sha }} \
+            --registry-login-server eddoazurecontainers.azurecr.io \
+            --registry-username ${{ secrets.TEACHERSEDDOAI_REGISTRY_USERNAME }} \
+            --registry-password ${{ secrets.TEACHERSEDDOAI_REGISTRY_PASSWORD }} \
+            --ingress external \
+            --target-port 80
+
+      - name: Comment on PR with Deployment URL
+        if: github.event.action != 'closed'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -f body="🚀 Your PR has been deployed! View it here: [$DEPLOY_URL]($DEPLOY_URL)"
+
+      - name: Capture Logs Before Deletion
+        if: github.event.action == 'closed'
+        run: |
+          az containerapp logs show \
+            --name $PR_ENV_NAME \
+            --resource-group eddo-container-apps > logs-${{ github.event.pull_request.number }}.txt
+          gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            -f body="📝 PR closed. Logs saved for debugging. [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+      - name: Tear Down Temporary Container (if PR is closed)
+        if: github.event.action == 'closed'
+        run: |
+          az containerapp delete \
+            --name $PR_ENV_NAME \
+            --resource-group eddo-container-apps \
+            --yes
