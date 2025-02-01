@@ -7,51 +7,84 @@ on:
       - opened
       - synchronize
       - reopened
-      - closed  # Tear down environment on PR close
+      - closed
 
   workflow_dispatch:
 
 jobs:
-  deploy-or-teardown:
+  build-test-deploy:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-      pull-requests: write # Needed for commenting on PRs
+      pull-requests: write # Needed for PR comments
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - name: Set Environment Variables from Secrets
+        run: |
+          echo "LANGCHAIN_API_KEY=${{ secrets.LANGCHAIN_API_KEY }}" >> $GITHUB_ENV
+          echo "LANGGRAPH_API_URL=${{ secrets.LANGGRAPH_API_URL }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=${{ secrets.NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID }}" >> $GITHUB_ENV
+          echo "AUTH0_SECRET=${{ secrets.AUTH0_SECRET }}" >> $GITHUB_ENV
+          echo "AUTH0_BASE_URL=${{ secrets.AUTH0_BASE_URL }}" >> $GITHUB_ENV
+          echo "AUTH0_ISSUER_BASE_URL=${{ secrets.AUTH0_ISSUER_BASE_URL }}" >> $GITHUB_ENV
+          echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> $GITHUB_ENV
+          echo "AUTH0_SCOPE=${{ secrets.AUTH0_SCOPE }}" >> $GITHUB_ENV
+
+      - name: Verify Environment Variables (Debugging - Masked)
+        run: |
+          echo "::add-mask::$LANGCHAIN_API_KEY"
+          echo "::add-mask::$LANGGRAPH_API_URL"
+          echo "::add-mask::$NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"
+          echo "::add-mask::$AUTH0_SECRET"
+          echo "::add-mask::$AUTH0_CLIENT_ID"
+          echo "::add-mask::$AUTH0_CLIENT_SECRET"
+          echo "Environment variables set successfully."
 
       - name: Install Dependencies
         run: pnpm install
 
       - name: Build Docker Image
-        run: docker build -t my-app .
+        id: build
+        run: |
+          docker build -t my-app . 2>&1 | tee build.log
+        continue-on-error: true
 
       - name: Run Tests
-        run: pnpm test
+        id: test
+        run: |
+          pnpm test 2>&1 | tee test.log
+        continue-on-error: true
+
+      - name: Reject PR with Build/Test Failure
+        if: steps.build.outcome == 'failure' || steps.test.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          ERROR_LOG=$(tail -n 20 build.log test.log | sed 's/"/\\"/g')
+          gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -f body="❌ Build or Tests Failed. Please check and fix the errors:\n\`\`\`\n$ERROR_LOG\n\`\`\`"
+          exit 1
 
       - name: Azure Login
+        if: steps.build.outcome == 'success' && steps.test.outcome == 'success'
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.TEACHERSEDDOAI_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.TEACHERSEDDOAI_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.TEACHERSEDDOAI_AZURE_SUBSCRIPTION_ID }}
 
-      - name: Set PR Environment Variables
-        run: |
-          echo "PR_ENV_NAME=teachers-eddo-ai-pr-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-          echo "DEPLOY_URL=https://${PR_ENV_NAME}.azurecontainerapps.io" >> $GITHUB_ENV
-
       - name: Deploy Container App (if PR is open)
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.build.outcome == 'success' && steps.test.outcome == 'success'
         run: |
           az containerapp create \
-            --name $PR_ENV_NAME \
+            --name teachers-eddo-ai-pr-${{ github.event.pull_request.number }} \
             --resource-group eddo-container-apps \
             --image eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.event.pull_request.head.sha }} \
             --registry-login-server eddoazurecontainers.azurecr.io \
@@ -61,11 +94,12 @@ jobs:
             --target-port 80
 
       - name: Comment on PR with Deployment URL
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.build.outcome == 'success' && steps.test.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
+          DEPLOY_URL=https://teachers-eddo-ai-pr-${PR_NUMBER}.azurecontainerapps.io
           gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -f body="🚀 Your PR has been deployed! View it here: [$DEPLOY_URL]($DEPLOY_URL)"
 
@@ -73,7 +107,7 @@ jobs:
         if: github.event.action == 'closed'
         run: |
           az containerapp logs show \
-            --name $PR_ENV_NAME \
+            --name teachers-eddo-ai-pr-${{ github.event.pull_request.number }} \
             --resource-group eddo-container-apps > logs-${{ github.event.pull_request.number }}.txt
           gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
             -f body="📝 PR closed. Logs saved for debugging. [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
@@ -82,6 +116,6 @@ jobs:
         if: github.event.action == 'closed'
         run: |
           az containerapp delete \
-            --name $PR_ENV_NAME \
+            --name teachers-eddo-ai-pr-${{ github.event.pull_request.number }} \
             --resource-group eddo-container-apps \
             --yes
