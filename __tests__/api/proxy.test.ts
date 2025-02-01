@@ -22,10 +22,12 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
+    delete process.env.LANGCHAIN_API_KEY;
+    delete process.env.LANGGRAPH_API_URL;
 });
 
-describe.skip('API Route Handler', () => {
+describe('API Route Handler', () => {
     describe('CORS Headers', () => {
         it('should include CORS headers in successful responses', async () => {
             const mockResponse = new Response('test', { status: 200 });
@@ -40,11 +42,12 @@ describe.skip('API Route Handler', () => {
         });
 
         it('should handle OPTIONS requests correctly', async () => {
-            const req = new NextRequest('http://localhost:3000/api/test');
-            const response = await OPTIONS(req);
+            const response = await OPTIONS();
 
             expect(response.status).toBe(204);
             expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET, POST, PUT, PATCH, DELETE, OPTIONS');
+            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
         });
     });
 
@@ -91,6 +94,94 @@ describe.skip('API Route Handler', () => {
                 })
             );
         });
+
+        it('should forward PUT requests with body', async () => {
+            const mockResponse = new Response('test data', { status: 200 });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+            const requestBody = JSON.stringify({ test: 'data' });
+
+            const req = new NextRequest('http://localhost:3000/api/test', {
+                method: 'PUT',
+                body: requestBody,
+            });
+            await PUT(req);
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${MOCK_API_URL}/test`,
+                expect.objectContaining({
+                    method: 'PUT',
+                    body: requestBody,
+                    headers: expect.objectContaining({
+                        'x-api-key': MOCK_API_KEY,
+                        'Authorization': `Bearer ${MOCK_ACCESS_TOKEN}`
+                    }),
+                })
+            );
+        });
+
+        it('should forward PATCH requests with body', async () => {
+            const mockResponse = new Response('test data', { status: 200 });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+            const requestBody = JSON.stringify({ test: 'data' });
+
+            const req = new NextRequest('http://localhost:3000/api/test', {
+                method: 'PATCH',
+                body: requestBody,
+            });
+            await PATCH(req);
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${MOCK_API_URL}/test`,
+                expect.objectContaining({
+                    method: 'PATCH',
+                    body: requestBody,
+                    headers: expect.objectContaining({
+                        'x-api-key': MOCK_API_KEY,
+                        'Authorization': `Bearer ${MOCK_ACCESS_TOKEN}`
+                    }),
+                })
+            );
+        });
+
+        it('should forward DELETE requests', async () => {
+            const mockResponse = new Response('test data', { status: 200 });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+            const req = new NextRequest('http://localhost:3000/api/test');
+            await DELETE(req);
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${MOCK_API_URL}/test`,
+                expect.objectContaining({
+                    method: 'DELETE',
+                    headers: expect.objectContaining({
+                        'x-api-key': MOCK_API_KEY,
+                        'Authorization': `Bearer ${MOCK_ACCESS_TOKEN}`
+                    }),
+                })
+            );
+        });
+
+        it('should handle streaming responses', async () => {
+            const mockStream = new ReadableStream();
+            const mockResponse = new Response(mockStream, {
+                status: 200,
+                headers: new Headers({
+                    'content-type': 'text/event-stream',
+                    'cache-control': 'no-cache',
+                    'connection': 'keep-alive'
+                })
+            });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+            const req = new NextRequest('http://localhost:3000/api/test');
+            const response = await GET(req);
+
+            expect(response.headers.get('Content-Type')).toBe('text/event-stream');
+            expect(response.headers.get('Cache-Control')).toBe('no-cache');
+            expect(response.headers.get('Connection')).toBe('keep-alive');
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+        });
     });
 
     describe('Error Handling', () => {
@@ -106,7 +197,10 @@ describe.skip('API Route Handler', () => {
         });
 
         it('should handle network errors', async () => {
-            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+            const networkError = new Error('Network error');
+            (global.fetch as jest.Mock).mockRejectedValueOnce(networkError);
+            const { getAccessToken } = require('@auth0/nextjs-auth0/edge');
+            (getAccessToken as jest.Mock).mockResolvedValueOnce({ accessToken: 'mock-access-token' });
 
             const req = new NextRequest('http://localhost:3000/api/test');
             const response = await GET(req);
