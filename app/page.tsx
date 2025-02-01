@@ -28,9 +28,14 @@ export default function Home() {
 
   return (
     <main className="h-dvh flex items-center justify-center">
-      <a href="/api/auth/login" className="text-blue-600 hover:text-blue-800 underline">
-        Login
-      </a>
+      <div className="flex flex-col items-center">
+        <a href="/api/auth/login" className="text-blue-600 hover:text-blue-800 underline">
+          Login
+        </a>
+        <a href="/api/auth/signup" className="text-blue-600 hover:text-blue-800 underline mt-4">
+          Sign Up
+        </a>
+      </div>
     </main>
   );
 }

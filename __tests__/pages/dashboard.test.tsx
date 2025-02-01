@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import DashboardPage from '@/app/protected/dashboard/page';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
+import AuthButton from '@/components/AuthButton';
+import Home from '@/app/page';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -49,5 +51,23 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
     expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
+  });
+});
+
+describe('AuthButton', () => {
+  it('should render sign-up link when user is not authenticated', () => {
+    (getSession as jest.Mock).mockResolvedValue(null);
+
+    render(<AuthButton />);
+
+    expect(screen.getByText('Sign Up')).toBeInTheDocument();
+  });
+});
+
+describe('Home', () => {
+  it('should render sign-up link on the home page', () => {
+    render(<Home />);
+
+    expect(screen.getByText('Sign Up')).toBeInTheDocument();
   });
 });

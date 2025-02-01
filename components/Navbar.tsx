@@ -21,6 +21,9 @@ export default function Navbar() {
                 </div>
                 <div className="flex items-center gap-4">
                     <AuthButton />
+                    <Link href="/api/auth/signup" className="text-blue-600 hover:text-blue-800 underline">
+                        Sign Up
+                    </Link>
                     <div>
                         <button onClick={() => changeLanguage('en')} className="px-2 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
                             {t('english')}
