@@ -1,0 +1,52 @@
+name: Build & Test on PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Change if using a different Node.js version
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Linting
+        run: npm run lint
+        continue-on-error: true  # Allows linting to continue even if there are warnings
+
+      - name: Run Tests
+        id: test
+        run: npm run test  # Uses Jest for testing
+
+      - name: Build Next.js Application
+        id: build
+        run: npm run build  # Uses Next.js build process
+
+      - name: Reject PR if Build/Test Fails
+        if: steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -f body="❌ Build or tests failed. Please check the logs and fix errors."
+          exit 1
