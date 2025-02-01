@@ -4,6 +4,9 @@ import { useRef } from "react";
 import {
   Thread,
   Composer,
+  CompositeAttachmentAdapter,
+  SimpleImageAttachmentAdapter,
+  SimpleTextAttachmentAdapter,
 } from "@assistant-ui/react";
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
@@ -40,6 +43,12 @@ export function MyAssistant() {
       threadIdRef.current = threadId;
       return { messages: state.values.messages };
     },
+    adapters: {
+      attachments: new CompositeAttachmentAdapter([
+        new SimpleImageAttachmentAdapter(),
+        new SimpleTextAttachmentAdapter(),
+      ]),
+    },
   });
 
   return (
@@ -61,4 +70,3 @@ export function MyAssistant() {
     </Thread.Root>
   );
 }
-
