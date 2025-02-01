@@ -4,6 +4,7 @@ import { useRef } from "react";
 import {
   Thread,
   Composer,
+  ContentPart,
 } from "@assistant-ui/react";
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
@@ -47,7 +48,7 @@ export function MyAssistant() {
       className="mx-auto max-w-2xl mt-10"
       config={{
         runtime: runtime,
-        assistantMessage: { components: { Text: MarkdownText } },
+        assistantMessage: { components: { Text: MarkdownText, Content: ContentPart } },
       }}
     >
       <Thread.Viewport>
@@ -61,4 +62,3 @@ export function MyAssistant() {
     </Thread.Root>
   );
 }
-

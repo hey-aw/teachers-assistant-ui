@@ -42,7 +42,7 @@ export const sendMessage = async (params: {
         }
         : null,
       command: params.command,
-      streamMode: ["messages", "updates"],
+      streamMode: ["messages", "updates", "tool_updates"],
       config: {
         configurable: {
           user_id: params.userId,
