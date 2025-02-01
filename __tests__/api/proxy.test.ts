@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST, PUT, PATCH, DELETE, OPTIONS } from '@/app/api/[..._path]/route';
 
+// Mock Auth0
+jest.mock('@auth0/nextjs-auth0/edge', () => ({
+    getAccessToken: jest.fn().mockResolvedValue({ accessToken: 'mock-token', token: { access_token: 'mock-token' } })
+}));
+
 // Mock environment variables
 const MOCK_API_KEY = 'test-api-key';
 const MOCK_API_URL = 'https://api.example.com';
@@ -32,8 +37,7 @@ describe('API Route Handler', () => {
         });
 
         it('should handle OPTIONS requests correctly', async () => {
-            const req = new NextRequest('http://localhost:3000/api/test');
-            const response = await OPTIONS(req);
+            const response = await OPTIONS();
 
             expect(response.status).toBe(204);
             expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');

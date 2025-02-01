@@ -14,19 +14,12 @@ function getCorsHeaders() {
 async function handleRequest(req: NextRequest, method: string) {
   try {
     // Get the access token using Edge-compatible method
-    const { accessToken } = await getAccessToken(req, undefined);
-
-    if (!accessToken) {
-      return new NextResponse(
-        JSON.stringify({ error: "Unauthorized - No valid session" }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            ...getCorsHeaders(),
-          },
-        }
-      );
+    let accessToken: string | undefined;
+    try {
+      const result = await getAccessToken();
+      accessToken = result?.accessToken;
+    } catch (e) {
+      console.warn('Failed to get access token:', e);
     }
 
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
@@ -42,7 +35,7 @@ async function handleRequest(req: NextRequest, method: string) {
       method,
       headers: {
         "x-api-key": process.env["LANGCHAIN_API_KEY"] || "",
-        "Authorization": `Bearer ${accessToken}`,
+        ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {}),
       },
     };
 
@@ -73,16 +66,17 @@ async function handleRequest(req: NextRequest, method: string) {
       status: res.status,
       statusText: res.statusText,
       headers: {
-        ...res.headers,
+        ...Object.fromEntries(res.headers.entries()),
         ...getCorsHeaders(),
       },
     });
   } catch (e: unknown) {
+    console.error('API error:', e);
     if (e instanceof Error) {
       return new NextResponse(
         JSON.stringify({ error: e.message }),
         {
-          status: (e as { status?: number }).status ?? 500,
+          status: (e as any).status || 500,
           headers: {
             'Content-Type': 'application/json',
             ...getCorsHeaders(),
@@ -109,7 +103,6 @@ export const PUT = (req: NextRequest) => handleRequest(req, "PUT");
 export const PATCH = (req: NextRequest) => handleRequest(req, "PATCH");
 export const DELETE = (req: NextRequest) => handleRequest(req, "DELETE");
 
-// Add a new OPTIONS handler
 export const OPTIONS = () => {
   return new NextResponse(null, {
     status: 204,

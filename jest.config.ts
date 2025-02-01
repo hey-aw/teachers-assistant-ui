@@ -1,22 +1,28 @@
 import type { Config } from 'jest';
-import nextJest from 'next/jest';
-
-const createJestConfig = nextJest({
-    dir: './',
-});
 
 const config: Config = {
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    testEnvironment: 'jest-environment-jsdom',
+    testEnvironment: 'jsdom',
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/$1',
-        '^react$': '<rootDir>/node_modules/react',
-        '^react-dom$': '<rootDir>/node_modules/react-dom'
+        '^@/lib/(.*)$': '<rootDir>/lib/$1',
+        '^@/app/(.*)$': '<rootDir>/app/$1',
+        '^@/(.*)$': '<rootDir>/$1'
     },
-    testMatch: ['**/__tests__/**/*.test.ts?(x)'],
-    collectCoverage: true,
-    coverageDirectory: 'coverage',
-    coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
+    transform: {
+        '^.+\\.(t|j)sx?$': ['ts-jest', {
+            tsconfig: {
+                jsx: 'react-jsx'
+            }
+        }]
+    },
+    transformIgnorePatterns: [
+        'node_modules/(?!(@auth0/nextjs-auth0|jose)/)'
+    ],
+    testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    testEnvironmentOptions: {
+        url: 'http://localhost'
+    }
 };
 
-export default createJestConfig(config);
+export default config;
