@@ -1,10 +1,24 @@
 "use client";
 
 import { useRef } from "react";
+import { cn } from "@/lib/utils";
 import {
-  Thread,
-  Composer,
+  ActionBarPrimitive,
+  BranchPickerPrimitive,
+  ComposerPrimitive,
+  MessagePrimitive,
+  ThreadPrimitive,
 } from "@assistant-ui/react";
+import * as Avatar from "@radix-ui/react-avatar";
+import {
+  ArrowUpIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  Pencil1Icon,
+  ReloadIcon,
+} from "@radix-ui/react-icons";
 import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { useUser } from '@auth0/nextjs-auth0/client';
@@ -43,22 +57,21 @@ export function MyAssistant() {
   });
 
   return (
-    <Thread.Root
+    <ThreadPrimitive.Root
       className="mx-auto max-w-2xl mt-10"
       config={{
         runtime: runtime,
         assistantMessage: { components: { Text: MarkdownText } },
       }}
     >
-      <Thread.Viewport>
-        <Thread.Messages />
-        <Thread.FollowupSuggestions />
-      </Thread.Viewport>
-      <Thread.ViewportFooter>
-        <Thread.ScrollToBottom />
-        <Composer />
-      </Thread.ViewportFooter>
-    </Thread.Root>
+      <ThreadPrimitive.Viewport>
+        <ThreadPrimitive.Messages />
+        <ThreadPrimitive.FollowupSuggestions />
+      </ThreadPrimitive.Viewport>
+      <ThreadPrimitive.ViewportFooter>
+        <ThreadPrimitive.ScrollToBottom />
+        <ComposerPrimitive />
+      </ThreadPrimitive.ViewportFooter>
+    </ThreadPrimitive.Root>
   );
 }
-
