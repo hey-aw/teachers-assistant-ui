@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 export const runtime = "edge";
 
@@ -12,6 +13,22 @@ function getCorsHeaders() {
 
 async function handleRequest(req: NextRequest, method: string) {
   try {
+    // Get the access token using Edge-compatible method
+    const { accessToken } = await getAccessToken(req, undefined);
+
+    if (!accessToken) {
+      return new NextResponse(
+        JSON.stringify({ error: "Unauthorized - No valid session" }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            ...getCorsHeaders(),
+          },
+        }
+      );
+    }
+
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
     const url = new URL(req.url);
     const searchParams = new URLSearchParams(url.search);
@@ -25,6 +42,7 @@ async function handleRequest(req: NextRequest, method: string) {
       method,
       headers: {
         "x-api-key": process.env["LANGCHAIN_API_KEY"] || "",
+        "Authorization": `Bearer ${accessToken}`,
       },
     };
 
@@ -36,6 +54,20 @@ async function handleRequest(req: NextRequest, method: string) {
       `${process.env["LANGGRAPH_API_URL"]}/${path}${queryString}`,
       options,
     );
+
+    // If it's a stream response, handle it accordingly
+    const contentType = res.headers.get('content-type');
+    if (contentType?.includes('text/event-stream')) {
+      return new NextResponse(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          ...getCorsHeaders(),
+        },
+      });
+    }
 
     return new NextResponse(res.body, {
       status: res.status,
