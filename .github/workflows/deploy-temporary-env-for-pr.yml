@@ -84,15 +84,13 @@ jobs:
             -f body="❌ Build or Tests Failed. Please check and fix the errors:\n\`\`\`\n$ERROR_LOG\n\`\`\`"
           exit 1
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          allow-no-subscriptions: true  # Add this to avoid failures in some cases
-          enable-AzPSSession: true      # Required for Az CLI commands
-      
+          - name: Azure Login
+          uses: azure/login@v2.2.0
+          with:
+            client-id: ${{ secrets.AZURE_CLIENT_ID }}
+            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Deploy Container App (if PR is open)
         if: github.event.action != 'closed' && steps.build.outcome == 'success' && steps.test.outcome == 'success'
         run: |
