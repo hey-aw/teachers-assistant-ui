@@ -1,6 +1,6 @@
 import { getSession } from '@auth0/nextjs-auth0';
 import { redirect } from 'next/navigation';
-import DashboardContent from './DashboardContent';
+import { useTranslation } from 'react-i18next';
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -9,5 +9,10 @@ export default async function DashboardPage() {
         redirect('/api/auth/login');
     }
 
-    return <DashboardContent user={{ name: session.user.name }} />;
+    return (
+        <div>
+            <h1>Protected Dashboard</h1>
+            <p>Welcome, {session.user.name}!</p>
+        </div>
+    );
 }

@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom';
-import { Response, Request, Headers } from 'node-fetch';
-import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
-import i18next from 'i18next';
-import { initReactI18next } from 'react-i18next';
+require('@testing-library/jest-dom');
+const { Response, Request, Headers } = require('node-fetch');
+const { ReadableStream, WritableStream, TransformStream } = require('stream/web');
+const i18next = require('i18next');
+const { initReactI18next } = require('react-i18next');
 
 // Initialize i18next for tests
 i18next
@@ -38,23 +38,29 @@ jest.mock('@auth0/nextjs-auth0', () => ({
   getSession: jest.fn(),
   withApiAuthRequired: jest.fn((handler) => handler),
   withPageAuthRequired: jest.fn((component) => component),
-  handleAuth: jest.fn(() => async () => new Response()),
+  handleAuth: jest.fn(() => async () => ({
+    status: 200,
+    headers: {},
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  })),
 }));
 
 // Mock Web API globals
-global.Response = Response as unknown as typeof globalThis.Response;
-global.Request = Request as unknown as typeof globalThis.Request;
-global.Headers = Headers as unknown as typeof globalThis.Headers;
-
-// Add Web Streams API to global
 Object.assign(global, {
+  Response,
+  Request,
+  Headers,
   ReadableStream,
   WritableStream,
-  TransformStream
+  TransformStream,
 });
 
+// Mock TextEncoder/TextDecoder if not in browser environment
 if (typeof window === 'undefined') {
   const { TextEncoder, TextDecoder } = require('util');
-  global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder;
+  Object.assign(global, {
+    TextEncoder,
+    TextDecoder
+  });
 } 

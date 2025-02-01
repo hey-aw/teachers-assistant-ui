@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import Dashboard from '@/app/protected/dashboard/page';
+import Dashboard from '../../../app/protected/dashboard/page';
 import { getSession } from '@auth0/nextjs-auth0';
 
 jest.mock('@auth0/nextjs-auth0', () => ({
@@ -8,13 +8,18 @@ jest.mock('@auth0/nextjs-auth0', () => ({
 
 describe('Dashboard Page', () => {
     it('should render the dashboard page', async () => {
-        (getSession as jest.Mock).mockResolvedValue({
-            user: { name: 'Test User' }
+        jest.mocked(getSession).mockResolvedValue({
+            user: {
+                name: 'Test User',
+                email: 'test@example.com',
+                sub: 'auth0|123'
+            }
         });
 
-        const DashboardComponent = await Dashboard();
-        render(DashboardComponent);
+        const Component = await Dashboard();
+        render(Component);
 
         expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Welcome, Test User!')).toBeInTheDocument();
     });
 });

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { getSession } from '@auth0/nextjs-auth0';
 import { redirect } from 'next/navigation';
-import DashboardPage from '@/app/protected/dashboard/page';
+import DashboardPage from '../../app/protected/dashboard/page';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 
@@ -21,7 +21,7 @@ describe('DashboardPage', () => {
   });
 
   it('should redirect to login if user is not authenticated', async () => {
-    (getSession as jest.Mock).mockResolvedValue(null);
+    jest.mocked(getSession).mockResolvedValue(null);
 
     try {
       await DashboardPage();
@@ -38,7 +38,7 @@ describe('DashboardPage', () => {
       sub: 'auth0|123',
     };
 
-    (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
+    jest.mocked(getSession).mockResolvedValue({ user: mockUser });
 
     const Component = await DashboardPage();
     render(

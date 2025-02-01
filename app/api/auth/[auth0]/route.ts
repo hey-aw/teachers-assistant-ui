@@ -1,19 +1,10 @@
-import { handleAuth } from '@auth0/nextjs-auth0';
+import { handleAuth, getSession } from '@auth0/nextjs-auth0';
+import { NextRequest } from 'next/server';
 
-export const GET = handleAuth({
-    onError(req: Request, error: Error) {
-        console.error('Auth0 Error:', error);
-        return new Response(JSON.stringify({
-            error: error.message,
-            status: 'error'
-        }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-});
+export async function GET(req: NextRequest) {
+    const auth = handleAuth();
+    return auth(req);
+}
 
 // Also support POST method for callbacks
 export const POST = handleAuth();

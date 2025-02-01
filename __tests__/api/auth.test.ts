@@ -28,7 +28,7 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
 
             const request = mockRequest('login');
-            const { GET } = require('@/app/api/auth/[auth0]/route');
+            const { GET } = require('../../app/api/auth/[auth0]/route');
             const response = await GET(request);
 
             expect(mockHandleAuth).toHaveBeenCalledWith(request);
@@ -44,7 +44,7 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
 
             const request = mockRequest('logout');
-            const { GET } = require('@/app/api/auth/[auth0]/route');
+            const { GET } = require('../../app/api/auth/[auth0]/route');
             const response = await GET(request);
 
             expect(mockHandleAuth).toHaveBeenCalledWith(request);
@@ -67,7 +67,7 @@ describe('Auth Routes', () => {
             (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
 
             const request = mockRequest('me');
-            const { GET } = require('@/app/api/auth/[auth0]/route');
+            const { GET } = require('../../app/api/auth/[auth0]/route');
             const response = await GET(request);
 
             expect(response.headers.get('Content-Type')).toBe('application/json');
@@ -83,7 +83,7 @@ describe('Auth Routes', () => {
             (getSession as jest.Mock).mockResolvedValue(null);
 
             const request = mockRequest('me');
-            const { GET } = require('@/app/api/auth/[auth0]/route');
+            const { GET } = require('../../app/api/auth/[auth0]/route');
             const response = await GET(request);
 
             expect(response.headers.get('Content-Type')).toBe('application/json');
