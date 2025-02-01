@@ -8,6 +8,14 @@ const config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['var(--font-geist-sans)'],
+        mono: ['var(--font-geist-mono)'],
+      },
+    },
+  },
   plugins: [
     require("tailwindcss-animate"),
     require("@assistant-ui/react/tailwindcss"),

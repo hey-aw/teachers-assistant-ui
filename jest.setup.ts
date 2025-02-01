@@ -1,6 +1,4 @@
 require('@testing-library/jest-dom');
-const { Response, Request, Headers } = require('node-fetch');
-const { ReadableStream, WritableStream, TransformStream } = require('stream/web');
 const i18next = require('i18next');
 const { initReactI18next } = require('react-i18next');
 
@@ -9,17 +7,14 @@ i18next
   .use(initReactI18next)
   .init({
     lng: 'en',
-    resources: {
-      en: {
-        translation: {
-          'protected_dashboard': 'Protected Dashboard',
-          'welcome': 'Welcome'
-        }
-      }
-    },
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
+    },
+    resources: {
+      en: {
+        translation: {},
+      },
     },
   });
 
@@ -45,16 +40,6 @@ jest.mock('@auth0/nextjs-auth0', () => ({
     text: () => Promise.resolve(''),
   })),
 }));
-
-// Mock Web API globals
-Object.assign(global, {
-  Response,
-  Request,
-  Headers,
-  ReadableStream,
-  WritableStream,
-  TransformStream,
-});
 
 // Mock TextEncoder/TextDecoder if not in browser environment
 if (typeof window === 'undefined') {
