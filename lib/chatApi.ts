@@ -75,18 +75,16 @@ export const sendMessage = async (params: {
 }) => {
   const client = createClient();
 
-  const input: Record<string, unknown> | null = params.messages.length
-    ? {
-      messages: params.messages,
-    }
-    : null;
+  const input = params.messages.length
+    ? { messages: params.messages }
+    : undefined;
+
+  // Ensure we have a valid config object that matches the API expectations
   const config = {
     configurable: {
       model_name: "openai",
-    },
+    }
   };
-
-  console.log(params.command);
 
   try {
     return await client.runs.stream(
@@ -94,7 +92,7 @@ export const sendMessage = async (params: {
       process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
       {
         input,
-        command: params.command!,
+        ...(params.command && { command: params.command }),
         config,
         streamMode: ["updates", "messages"],
       },
