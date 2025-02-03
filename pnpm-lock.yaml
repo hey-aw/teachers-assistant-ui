@@ -8,15 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@assistant-ui/monorepo':
+        specifier: git+https://github.com/Yonom/assistant-ui.git
+        version: git+https://github.com/Yonom/assistant-ui.git#b29a5272cf12311a529e7f52792e1f9dd2726509
       '@assistant-ui/react':
-        specifier: ^0.7.66
-        version: 0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
+        specifier: ^0.7.65
+        version: 0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
       '@assistant-ui/react-langgraph':
         specifier: ^0.2.3
-        version: 0.2.3(@assistant-ui/react@0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react@19.0.8)(react@19.0.0)
+        version: 0.2.3(@assistant-ui/react@0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react@19.0.8)(react@19.0.0)
       '@assistant-ui/react-markdown':
-        specifier: ^0.7.16
-        version: 0.7.16(@assistant-ui/react@0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
+        specifier: ^0.7.15
+        version: 0.7.15(@assistant-ui/react@0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
       '@auth0/nextjs-auth0':
         specifier: ^3.6.0
         version: 3.6.0(next@15.1.6(@babel/core@7.26.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
@@ -132,6 +135,10 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
+  '@assistant-ui/monorepo@git+https://github.com/Yonom/assistant-ui.git#b29a5272cf12311a529e7f52792e1f9dd2726509':
+    resolution: {commit: b29a5272cf12311a529e7f52792e1f9dd2726509, repo: https://github.com/Yonom/assistant-ui.git, type: git}
+    version: 0.0.0
+
   '@assistant-ui/react-langgraph@0.2.3':
     resolution: {integrity: sha512-5iPBgJIWxfD0Z3zV/JmiRlIn9NxL14T9+UshnVAfVlcq/xwo4EQCScdCJvUR1v6EyIKuwUKSO+TKr8VgtUKn4Q==}
     peerDependencies:
@@ -142,10 +149,10 @@ packages:
       '@types/react':
         optional: true
 
-  '@assistant-ui/react-markdown@0.7.16':
-    resolution: {integrity: sha512-eEaPEcxpIkSgw/DUFMOloYejb5Gck6Iqn97wRicCJsSToADQKdYxKXfr/ASt7m8vJxvnPJARE9G7l8I52HiY0A==}
+  '@assistant-ui/react-markdown@0.7.15':
+    resolution: {integrity: sha512-CChmuS0T2/mBtbVONkfolKxbLlNl8cFltV00AqJRQWwhU1Zy+0F0QWgX4RjiPexXBnrIRI4kQAFxMAwaNwBx1Q==}
     peerDependencies:
-      '@assistant-ui/react': ^0.7.64
+      '@assistant-ui/react': ^0.7.62
       '@types/react': '*'
       react: ^18 || ^19 || ^19.0.0-rc
       tailwindcss: ^3.4.4
@@ -155,8 +162,8 @@ packages:
       tailwindcss:
         optional: true
 
-  '@assistant-ui/react@0.7.66':
-    resolution: {integrity: sha512-L4+U6JvoTMVmRs82jp2VAMbqyxg//CK1JBf/HBAT89STKcNvbEdzHYeFix4jPKaZV2GwWyWioIezmw2FCUOlZw==}
+  '@assistant-ui/react@0.7.65':
+    resolution: {integrity: sha512-GnIc9x2NaeL6iv56JrFo/5tbDi4zNu+x6N+40wtQiJ1NhzZqTDy80HBNp9XA0fCJ1t7pigMcFmEVN4H4+QfhOw==}
     peerDependencies:
       '@types/react': '*'
       '@types/react-dom': '*'
@@ -3803,18 +3810,20 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@assistant-ui/react-langgraph@0.2.3(@assistant-ui/react@0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react@19.0.8)(react@19.0.0)':
+  '@assistant-ui/monorepo@git+https://github.com/Yonom/assistant-ui.git#b29a5272cf12311a529e7f52792e1f9dd2726509': {}
+
+  '@assistant-ui/react-langgraph@0.2.3(@assistant-ui/react@0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react@19.0.8)(react@19.0.0)':
     dependencies:
-      '@assistant-ui/react': 0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
+      '@assistant-ui/react': 0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
       react: 19.0.0
       uuid: 11.0.5
       zod: 3.24.1
     optionalDependencies:
       '@types/react': 19.0.8
 
-  '@assistant-ui/react-markdown@0.7.16(@assistant-ui/react@0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))':
+  '@assistant-ui/react-markdown@0.7.15(@assistant-ui/react@0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3))))(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))':
     dependencies:
-      '@assistant-ui/react': 0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
+      '@assistant-ui/react': 0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))
       '@radix-ui/react-primitive': 2.0.1(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-use-callback-ref': 1.1.0(@types/react@19.0.8)(react@19.0.0)
       '@types/hast': 3.0.4
@@ -3830,7 +3839,7 @@ snapshots:
       - react-dom
       - supports-color
 
-  '@assistant-ui/react@0.7.66(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))':
+  '@assistant-ui/react@0.7.65(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@20.17.16)(typescript@5.7.3)))':
     dependencies:
       '@ai-sdk/provider': 1.0.7
       '@radix-ui/primitive': 1.1.1

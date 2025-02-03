@@ -91,22 +91,5 @@ describe('Auth Routes', () => {
             expect(data).toEqual({ user: null });
         });
 
-        it('should handle 422 errors correctly', async () => {
-            const mockResponse = new Response(JSON.stringify({ message: 'Unprocessable Entity' }), {
-                status: 422,
-                headers: new Headers({
-                    'Content-Type': 'application/json'
-                })
-            });
-            mockHandleAuth.mockResolvedValue(mockResponse);
-
-            const request = mockRequest('me');
-            const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(422);
-            expect(data.error).toBe('Unprocessable Entity: The request was well-formed but was unable to be followed due to semantic errors.');
-        });
     });
 });

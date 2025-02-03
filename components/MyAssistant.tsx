@@ -1,23 +1,21 @@
 "use client";
 
 import { useRef } from "react";
-import {
-  Thread,
-  Composer,
-} from "@assistant-ui/react";
+import { Thread, type TextContentPartComponent } from "@assistant-ui/react";
 import {
   LangChainMessage,
   useLangGraphInterruptState,
   useLangGraphRuntime,
-  useLangGraphSendCommand
+  useLangGraphSendCommand,
 } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
+import { ToolFallback } from "./tools/ToolFallback";
 
-const MarkdownText = makeMarkdownText();
+const MarkdownComponent = makeMarkdownText() as unknown as TextContentPartComponent;
 
 const InterruptUI = () => {
   const interrupt = useLangGraphInterruptState();
@@ -71,23 +69,11 @@ export function MyAssistant() {
   });
 
   return (
-    <Thread.Root
-      className="mx-auto max-w-2xl mt-10"
-      config={{
-        runtime: runtime,
-        assistantMessage: { components: { Text: MarkdownText } },
-      }}
-    >
-      <Thread.Viewport>
-        <Thread.Messages />
-        <InterruptUI />
-        <Thread.FollowupSuggestions />
-      </Thread.Viewport>
-      <Thread.ViewportFooter>
-        <Thread.ScrollToBottom />
-        <Composer />
-      </Thread.ViewportFooter>
-    </Thread.Root>
+    <Thread
+      runtime={runtime}
+      components={{ MessagesFooter: InterruptUI }}
+      assistantMessage={{ components: { Text: MarkdownComponent, ToolFallback } }}
+    />
   );
 }
 
