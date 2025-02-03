@@ -65,6 +65,7 @@ async function handleRequest(req: NextRequest, method: string) {
       method,
       headers: {
         "X-Api-Key": apiKey,
+        "Content-Type": "application/json",
       },
     };
 
