@@ -1,0 +1,23 @@
+{
+  "auth": {
+    "identityProviders": {
+      "customOpenIdConnectProviders": {
+        "auth0": {
+          "registration": {
+            "clientIdSettingName": "<AUTH0_CLIENT_ID>",
+            "clientCredential": {
+              "clientSecretSettingName": "<AUTH0_CLIENT_SECRET>"
+            },
+            "openIdConnectConfiguration": {
+              "wellKnownOpenIdConfiguration": "https://<AUTH0_ISSUER_BASE_URL>/.well-known/openid-configuration"
+            }
+          },
+          "login": {
+            "nameClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+            "scopes": ["openid","profile"]
+          }
+        }
+      }
+    }
+  }
+}
