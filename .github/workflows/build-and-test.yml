@@ -20,6 +20,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+      - name: Debug - List Files
+        run: |
+          pwd
+          ls -la
+          git status
+          echo "Current branch:"
+          git branch --show-current
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
