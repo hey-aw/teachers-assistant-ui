@@ -4,6 +4,9 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  security-events: write
+
 jobs:
   assign-creator:
     runs-on: ubuntu-latest
