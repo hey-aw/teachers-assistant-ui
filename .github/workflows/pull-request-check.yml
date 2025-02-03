@@ -1,0 +1,50 @@
+name: Pull Request Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run Linting
+        run: pnpm run lint
+        continue-on-error: true
+
+      - name: Run Tests
+        id: test
+        run: pnpm run test:ci
+
+      - name: Build Next.js Application
+        id: build
+        run: pnpm run build
+
+      - name: Reject PR if Build/Test Fails
+        if: steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -f body="❌ Build or tests failed. Please check the logs and fix errors."
+          exit 1
