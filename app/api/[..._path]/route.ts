@@ -14,7 +14,7 @@ function getCorsHeaders() {
 async function handleRequest(req: NextRequest, method: string) {
   try {
     // Get the access token using Edge-compatible method
-    const { accessToken } = await getAccessToken(req, undefined);
+    const { accessToken } = await getAccessToken(req, NextResponse.next(), undefined);
 
     if (!accessToken) {
       return new NextResponse(
