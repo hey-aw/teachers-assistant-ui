@@ -13,10 +13,13 @@ const config: Config = {
         '^react$': '<rootDir>/node_modules/react',
         '^react-dom$': '<rootDir>/node_modules/react-dom'
     },
-    testMatch: ['**/__tests__/**/*.test.ts?(x)'],
+    testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/__tests__/lib/chatApi.test.ts'],
     collectCoverage: true,
     coverageDirectory: 'coverage',
     coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
+    transformIgnorePatterns: [
+        '/node_modules/(?!(@auth0/nextjs-auth0|jose)/)',
+    ],
 };
 
 export default createJestConfig(config);

@@ -1,57 +1,46 @@
-name: Trigger auto deployment for teachers-eddo-ai
+name: Azure Static Web Apps CI/CD
 
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
-    branches: [main]
-    paths:
-      - '**'
-      - '.github/workflows/teachers-eddo-ai-AutoDeployTrigger-f672ecc5-37c2-4861-a895-4d81560fed74.yml'
-
-  # Allow manual trigger
-  workflow_dispatch:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write #This is required for requesting the OIDC JWT Token
-      contents: read #Required when GH token is used to authenticate with private repo
-
+    name: Build and Deploy Job
     steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v3
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build Docker image
-        run: docker build -t my-app .
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Azure Login
-        uses: azure/login@v2.2.0
+      - uses: actions/checkout@v3
         with:
-          client-id: ${{ secrets.TEACHERSEDDOAI_AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.TEACHERSEDDOAI_AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.TEACHERSEDDOAI_AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push container image to registry
-        uses: Azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655
+          submodules: true
+          lfs: false
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          appSourcePath: ${{ github.workspace }}
-          dockerfilePath: Dockerfile
-          registryUrl: eddoazurecontainers.azurecr.io
-          registryUsername: ${{ secrets.TEACHERSEDDOAI_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.TEACHERSEDDOAI_REGISTRY_PASSWORD }}
-          containerAppName: teachers-eddo-ai
-          resourceGroup: eddo-container-apps
-          imageToBuild: eddoazurecontainers.azurecr.io/teachers-eddo-ai:${{ github.sha }}
-          buildArguments: |
-            KEY1=value1 KEY2=value2
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_COAST_0AE46E91E }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          action: "upload"
+          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+          app_location: "/" # App source code path
+          api_location: "api" # Api source code path - optional
+          output_location: "" # Built app content directory - optional
+          ###### End of Repository/Build Configurations ######
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_COAST_0AE46E91E }}
+          action: "close"
