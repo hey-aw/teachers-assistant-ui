@@ -79,7 +79,6 @@ export const sendMessage = async (params: {
     ? { messages: params.messages }
     : undefined;
 
-  // Ensure we have a valid config object that matches the API expectations
   const config = {
     configurable: {
       model_name: "openai",
@@ -97,7 +96,18 @@ export const sendMessage = async (params: {
         streamMode: ["updates", "messages"],
       },
     );
-  } catch (error) {
-    throw new ChatApiError(`Failed to send message to thread ${params.threadId}`, error);
+  } catch (error: any) {
+    // Enhanced error handling
+    let errorMessage = `Failed to send message to thread ${params.threadId}`;
+
+    if (error.response) {
+      // Add status code and response data if available
+      errorMessage += ` (Status ${error.response.status})`;
+      if (error.response.data) {
+        errorMessage += `: ${JSON.stringify(error.response.data)}`;
+      }
+    }
+
+    throw new ChatApiError(errorMessage, error);
   }
 };
