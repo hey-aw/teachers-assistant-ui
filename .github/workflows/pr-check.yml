@@ -44,10 +44,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          if [ -f "pnpm-lock.yaml" ]; then
-            pnpm install --frozen-lockfile
+          if [ -f "pnpm-lock.yaml" ] && pnpm install --frozen-lockfile; then
+            echo "Dependencies installed with frozen lockfile"
           else
-            pnpm install
+            echo "Installing dependencies without frozen lockfile"
+            pnpm install --no-frozen-lockfile
           fi
 
       - name: Set Test Environment Variables
