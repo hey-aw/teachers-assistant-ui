@@ -91,4 +91,41 @@ describe('Auth Routes', () => {
             expect(data).toEqual({ user: null });
         });
     });
+
+    describe('Middleware Domain Check', () => {
+        it('should allow users with @eddolearning.com email domain and verified email', async () => {
+            const mockUser = {
+                sub: 'auth0|123',
+                name: 'Test User',
+                email: 'test@eddolearning.com',
+                email_verified: true
+            };
+
+            (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
+
+            const request = mockRequest('protected');
+            const { middleware } = require('@/app/middleware');
+            const response = await middleware(request);
+
+            expect(response.status).toBe(200);
+        });
+
+        it('should redirect users with non-@eddolearning.com email domain or unverified email', async () => {
+            const mockUser = {
+                sub: 'auth0|123',
+                name: 'Test User',
+                email: 'test@example.com',
+                email_verified: false
+            };
+
+            (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
+
+            const request = mockRequest('protected');
+            const { middleware } = require('@/app/middleware');
+            const response = await middleware(request);
+
+            expect(response.status).toBe(302);
+            expect(response.headers.get('Location')).toBe('/not-found');
+        });
+    });
 });
