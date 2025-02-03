@@ -104,6 +104,34 @@ describe('API Route Handler', () => {
             expect(response.status).toBe(500);
             expect(data.error).toBe('Network error');
         });
+
+        it('should handle fetch errors for POST /api/threads', async () => {
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('fetch failed'));
+
+            const req = new NextRequest('http://localhost:3000/api/threads', {
+                method: 'POST',
+                body: JSON.stringify({ test: 'data' }),
+            });
+            const response = await POST(req);
+            const data = await response.json();
+
+            expect(response.status).toBe(500);
+            expect(data.error).toBe('fetch failed');
+        });
+
+        it('should handle fetch errors for POST /api/runs/stream', async () => {
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('fetch failed'));
+
+            const req = new NextRequest('http://localhost:3000/api/runs/stream', {
+                method: 'POST',
+                body: JSON.stringify({ test: 'data' }),
+            });
+            const response = await POST(req);
+            const data = await response.json();
+
+            expect(response.status).toBe(500);
+            expect(data.error).toBe('fetch failed');
+        });
     });
 
     describe('Query Parameter Handling', () => {

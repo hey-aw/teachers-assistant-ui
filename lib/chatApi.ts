@@ -15,7 +15,12 @@ const createClient = () => {
 
 export const createThread = async () => {
   const client = createClient();
-  return client.threads.create();
+  try {
+    return await client.threads.create();
+  } catch (error) {
+    console.error("Failed to create thread:", error);
+    throw new Error("Failed to create thread");
+  }
 };
 
 export const getThreadState = async (
@@ -32,23 +37,28 @@ export const sendMessage = async (params: {
   userId?: string | null;
 }) => {
   const client = createClient();
-  return client.runs.stream(
-    params.threadId,
-    process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
-    {
-      input: params.messages?.length
-        ? {
-          messages: params.messages,
-        }
-        : null,
-      command: params.command,
-      streamMode: ["messages", "updates"],
-      config: {
-        configurable: {
-          user_id: params.userId,
-          thread_id: params.threadId,
+  try {
+    return await client.runs.stream(
+      params.threadId,
+      process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
+      {
+        input: params.messages?.length
+          ? {
+            messages: params.messages,
+          }
+          : null,
+        command: params.command,
+        streamMode: ["messages", "updates"],
+        config: {
+          configurable: {
+            user_id: params.userId,
+            thread_id: params.threadId,
+          },
         },
-      },
-    }
-  );
+      }
+    );
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    throw new Error("Failed to send message");
+  }
 };
