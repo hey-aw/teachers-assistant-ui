@@ -17,6 +17,9 @@ const config: Config = {
     collectCoverage: true,
     coverageDirectory: 'coverage',
     coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
+    transformIgnorePatterns: [
+        '/node_modules/(?!(@auth0/nextjs-auth0|jose)/)',
+    ],
 };
 
 export default createJestConfig(config);

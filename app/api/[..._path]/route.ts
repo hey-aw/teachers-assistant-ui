@@ -3,6 +3,14 @@ import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 export const runtime = "edge";
 
+function getApiKey() {
+  const apiKey = process.env["LANGSMITH_API_KEY"] || "";
+  if (!apiKey) {
+    console.warn("LANGSMITH_API_KEY is not set");
+  }
+  return apiKey;
+}
+
 function getCorsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -14,7 +22,8 @@ function getCorsHeaders() {
 async function handleRequest(req: NextRequest, method: string) {
   try {
     // Get the access token using Edge-compatible method
-    const { accessToken } = await getAccessToken(req, NextResponse.next(), undefined);
+    const authResult = await getAccessToken(req, NextResponse.next(), undefined);
+    const accessToken = authResult?.accessToken;
 
     if (!accessToken) {
       return new NextResponse(
@@ -38,11 +47,24 @@ async function handleRequest(req: NextRequest, method: string) {
       ? `?${searchParams.toString()}`
       : "";
 
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      return new NextResponse(
+        JSON.stringify({ error: "API key is not configured" }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            ...getCorsHeaders(),
+          },
+        }
+      );
+    }
+
     const options: RequestInit = {
       method,
       headers: {
-        "x-api-key": process.env["LANGCHAIN_API_KEY"] || "",
-        "Authorization": `Bearer ${accessToken}`,
+        "X-Api-Key": apiKey,
       },
     };
 
@@ -55,50 +77,40 @@ async function handleRequest(req: NextRequest, method: string) {
       options,
     );
 
-    // If it's a stream response, handle it accordingly
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('text/event-stream')) {
-      return new NextResponse(res.body, {
-        status: res.status,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          ...getCorsHeaders(),
-        },
-      });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: res.statusText }));
+      return new NextResponse(
+        JSON.stringify({ error: errorData.message || 'API request failed' }),
+        {
+          status: res.status,
+          headers: {
+            'Content-Type': 'application/json',
+            ...getCorsHeaders(),
+          },
+        }
+      );
     }
 
     return new NextResponse(res.body, {
       status: res.status,
       statusText: res.statusText,
       headers: {
-        ...res.headers,
+        ...Object.fromEntries(res.headers.entries()),
         ...getCorsHeaders(),
       },
     });
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      return new NextResponse(
-        JSON.stringify({ error: e.message }),
-        {
-          status: (e as { status?: number }).status ?? 500,
-          headers: {
-            'Content-Type': 'application/json',
-            ...getCorsHeaders(),
-          },
-        },
-      );
-    }
+  } catch (e: any) {
+    console.error('API request error:', e);
+    const status = e.status ?? (e.message?.includes('API key') ? 401 : 500);
     return new NextResponse(
-      JSON.stringify({ error: "Unknown error" }),
+      JSON.stringify({ error: e.message || 'Internal server error' }),
       {
-        status: 500,
+        status,
         headers: {
           'Content-Type': 'application/json',
           ...getCorsHeaders(),
         },
-      },
+      }
     );
   }
 }
