@@ -1,5 +1,16 @@
 import { ThreadState, Client } from "@langchain/langgraph-sdk";
-import { LangChainMessage } from "@assistant-ui/react-langgraph";
+import {
+  LangChainMessage,
+  LangGraphCommand,
+} from "@assistant-ui/react-langgraph";
+
+// Custom error class for chat API errors
+export class ChatApiError extends Error {
+  constructor(message: string, public originalError?: unknown) {
+    super(message);
+    this.name = 'ChatApiError';
+  }
+}
 
 const createClient = () => {
   const apiUrl =
@@ -12,19 +23,31 @@ const createClient = () => {
 
 export const createAssistant = async (graphId: string) => {
   const client = createClient();
-  return client.assistants.create({ graphId });
+  try {
+    return await client.assistants.create({ graphId });
+  } catch (error) {
+    throw new ChatApiError('Failed to create assistant', error);
+  }
 };
 
 export const createThread = async () => {
   const client = createClient();
-  return client.threads.create();
+  try {
+    return await client.threads.create();
+  } catch (error) {
+    throw new ChatApiError('Failed to create thread', error);
+  }
 };
 
 export const getThreadState = async (
   threadId: string,
 ): Promise<ThreadState<Record<string, unknown>>> => {
   const client = createClient();
-  return client.threads.getState(threadId);
+  try {
+    return await client.threads.getState(threadId);
+  } catch (error) {
+    throw new ChatApiError(`Failed to get thread state for thread ${threadId}`, error);
+  }
 };
 
 export const updateState = async (
@@ -35,34 +58,48 @@ export const updateState = async (
   },
 ) => {
   const client = createClient();
-  return client.threads.updateState(threadId, {
-    values: fields.newState,
-    asNode: fields.asNode!,
-  });
+  try {
+    return await client.threads.updateState(threadId, {
+      values: fields.newState,
+      asNode: fields.asNode!,
+    });
+  } catch (error) {
+    throw new ChatApiError(`Failed to update state for thread ${threadId}`, error);
+  }
 };
 
 export const sendMessage = async (params: {
   threadId: string;
   messages: LangChainMessage[];
+  command?: LangGraphCommand | undefined;
 }) => {
   const client = createClient();
 
-  const input: Record<string, unknown> | null = {
-    messages: params.messages,
-  };
+  const input: Record<string, unknown> | null = params.messages.length
+    ? {
+      messages: params.messages,
+    }
+    : null;
   const config = {
     configurable: {
       model_name: "openai",
     },
   };
 
-  return client.runs.stream(
-    params.threadId,
-    process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
-    {
-      input,
-      config,
-      streamMode: "messages",
-    },
-  );
+  console.log(params.command);
+
+  try {
+    return await client.runs.stream(
+      params.threadId,
+      process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
+      {
+        input,
+        command: params.command!,
+        config,
+        streamMode: ["updates", "messages"],
+      },
+    );
+  } catch (error) {
+    throw new ChatApiError(`Failed to send message to thread ${params.threadId}`, error);
+  }
 };
