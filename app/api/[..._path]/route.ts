@@ -70,6 +70,7 @@ async function handleRequest(req: NextRequest, method: string) {
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
       options.body = await req.text();
+      console.log(`Request body for ${path}:`, options.body);
     }
 
     const res = await fetch(
@@ -79,6 +80,10 @@ async function handleRequest(req: NextRequest, method: string) {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ message: res.statusText }));
+      console.log(`Error response for ${path}:`, {
+        status: res.status,
+        error: errorData
+      });
       return new NextResponse(
         JSON.stringify({ error: errorData.message || 'API request failed' }),
         {

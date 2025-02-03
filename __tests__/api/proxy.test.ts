@@ -111,6 +111,32 @@ describe('API Route Handler', () => {
                 })
             );
         });
+
+        it('should handle validation errors from stream runs', async () => {
+            const mockResponse = new Response(
+                JSON.stringify({
+                    message: 'Invalid request parameters',
+                    detail: 'Required field missing or invalid'
+                }),
+                {
+                    status: 422,
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    })
+                }
+            );
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+            const req = new NextRequest('http://localhost:3000/api/threads/123/runs/stream', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            });
+            const response = await POST(req);
+            const data = await response.json();
+
+            expect(response.status).toBe(422);
+            expect(data.error).toBe('Invalid request parameters');
+        });
     });
 
     describe('Error Handling', () => {
