@@ -5,13 +5,42 @@ import {
   Thread,
   Composer,
 } from "@assistant-ui/react";
-import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
+import {
+  LangChainMessage,
+  useLangGraphInterruptState,
+  useLangGraphRuntime,
+  useLangGraphSendCommand
+} from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { useUser } from '@auth0/nextjs-auth0/client';
+import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
 
 const MarkdownText = makeMarkdownText();
+
+const InterruptUI = () => {
+  const interrupt = useLangGraphInterruptState();
+  const sendCommand = useLangGraphSendCommand();
+  if (!interrupt) return null;
+
+  const respondYes = () => {
+    sendCommand({ resume: "yes" });
+  };
+  const respondNo = () => {
+    sendCommand({ resume: "no" });
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div>Interrupt: {interrupt.value}</div>
+      <div className="flex items-end gap-2">
+        <Button onClick={respondYes}>Confirm</Button>
+        <Button onClick={respondNo}>Reject</Button>
+      </div>
+    </div>
+  );
+};
 
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
@@ -27,8 +56,7 @@ export function MyAssistant() {
       return sendMessage({
         threadId,
         messages,
-        command,
-        userId: user?.email_verified ? user.email : null
+        command
       });
     },
     onSwitchToNewThread: async () => {
@@ -38,7 +66,7 @@ export function MyAssistant() {
     onSwitchToThread: async (threadId) => {
       const state = await getThreadState(threadId);
       threadIdRef.current = threadId;
-      return { messages: state.values.messages };
+      return { messages: (state.values.messages as LangChainMessage[]) ?? [] };
     },
   });
 
@@ -52,6 +80,7 @@ export function MyAssistant() {
     >
       <Thread.Viewport>
         <Thread.Messages />
+        <InterruptUI />
         <Thread.FollowupSuggestions />
       </Thread.Viewport>
       <Thread.ViewportFooter>
