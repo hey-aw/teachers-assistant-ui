@@ -1,6 +1,10 @@
 import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
 
-export default withMiddlewareAuthRequired();
+const { DISABLE_AUTH } = process.env;
+
+const middleware = DISABLE_AUTH ? (req, res, next) => next() : withMiddlewareAuthRequired();
+
+export default middleware;
 
 export const config = {
   matcher: [
@@ -8,4 +12,4 @@ export const config = {
     '/protected/:path*',
     '/api/protected/:path*',
   ],
-}; 
+};

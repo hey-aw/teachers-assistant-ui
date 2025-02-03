@@ -71,6 +71,7 @@ jobs:
           echo "AUTH0_CLIENT_SECRET=test-client-secret" >> $GITHUB_ENV
           echo "AUTH0_AUDIENCE=test-audience" >> $GITHUB_ENV
           echo "AUTH0_SCOPE=openid profile email" >> $GITHUB_ENV
+          echo "DISABLE_AUTH=true" >> $GITHUB_ENV
 
       - name: Build
         run: pnpm build

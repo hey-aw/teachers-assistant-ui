@@ -3,6 +3,8 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import React from 'react';
 
+const { DISABLE_AUTH } = process.env;
+
 export default function ProfilePage() {
     const { user, error, isLoading } = useUser();
 
@@ -26,11 +28,19 @@ export default function ProfilePage() {
         );
     }
 
-    if (!user) return (
+    if (!user && !DISABLE_AUTH) return (
         <div className="flex justify-center items-center min-h-[50vh]">
             <div className="text-lg">Please log in to view your profile.</div>
         </div>
     );
+
+    if (DISABLE_AUTH) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <div className="text-lg">Authentication is disabled for this preview build.</div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">

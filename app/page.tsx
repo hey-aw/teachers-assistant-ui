@@ -3,6 +3,8 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { MyAssistant } from "@/components/MyAssistant";
 
+const { DISABLE_AUTH } = process.env;
+
 export default function Home() {
   const { user, error, isLoading } = useUser();
 
@@ -28,6 +30,14 @@ export default function Home() {
     return (
       <main className="h-dvh">
         <MyAssistant />
+      </main>
+    );
+  }
+
+  if (DISABLE_AUTH) {
+    return (
+      <main className="h-dvh flex items-center justify-center">
+        <div>Authentication is disabled for this preview build.</div>
       </main>
     );
   }
