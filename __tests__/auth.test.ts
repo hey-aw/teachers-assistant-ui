@@ -29,4 +29,21 @@ describe('Auth Handler', () => {
 
     expect(mockHandler).toHaveBeenCalledWith(request);
   });
+
+  it('should handle 422 errors correctly', async () => {
+    const mockHandler = jest.fn().mockResolvedValue(new Response(JSON.stringify({ message: 'Unprocessable Entity' }), {
+      status: 422,
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    }));
+    (handleAuth as jest.Mock).mockReturnValue(mockHandler);
+
+    const request = new Request('http://localhost:3000/api/auth/login');
+    const response = await mockHandler(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(422);
+    expect(data.error).toBe('Unprocessable Entity: The request was well-formed but was unable to be followed due to semantic errors.');
+  });
 });
