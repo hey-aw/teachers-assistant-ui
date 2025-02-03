@@ -41,6 +41,23 @@ jest.mock('@auth0/nextjs-auth0', () => ({
   handleAuth: jest.fn(() => async () => new Response()),
 }));
 
+// Mock LangGraph SDK
+jest.mock('@langchain/langgraph-sdk', () => {
+  const originalModule = jest.requireActual('@langchain/langgraph-sdk');
+  return {
+    ...originalModule,
+    Client: jest.fn().mockImplementation(() => ({
+      threads: {
+        create: jest.fn(),
+        getState: jest.fn(),
+      },
+      runs: {
+        stream: jest.fn(),
+      },
+    })),
+  };
+});
+
 // Mock Web API globals
 global.Response = Response as unknown as typeof globalThis.Response;
 global.Request = Request as unknown as typeof globalThis.Request;
