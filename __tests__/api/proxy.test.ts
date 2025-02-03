@@ -111,6 +111,26 @@ describe('API Route Handler', () => {
                 })
             );
         });
+
+        it('should handle 422 status code from /runs/stream endpoint', async () => {
+            const mockResponse = new Response(JSON.stringify({ message: 'Unprocessable Entity' }), {
+                status: 422,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                })
+            });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+            const req = new NextRequest('http://localhost:3000/api/runs/stream', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            });
+            const response = await POST(req);
+            const data = await response.json();
+
+            expect(response.status).toBe(422);
+            expect(data.error).toBe('Unprocessable Entity: The request was well-formed but was unable to be followed due to semantic errors.');
+        });
     });
 
     describe('Error Handling', () => {
