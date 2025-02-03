@@ -44,12 +44,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          if [ -f "pnpm-lock.yaml" ] && pnpm install --frozen-lockfile; then
-            echo "Dependencies installed with frozen lockfile"
-          else
-            echo "Installing dependencies without frozen lockfile"
-            pnpm install --no-frozen-lockfile
-          fi
+          pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Test Environment Variables
         run: |
