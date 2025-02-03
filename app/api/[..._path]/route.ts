@@ -70,8 +70,29 @@ async function handleRequest(req: NextRequest, method: string) {
     };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      options.body = await req.text();
-      console.log(`Request body for ${path}:`, options.body);
+      try {
+        const bodyText = await req.text();
+        // Validate that the body is valid JSON if present
+        if (bodyText) {
+          JSON.parse(bodyText);
+        }
+        options.body = bodyText;
+        console.log(`Request body for ${path}:`, options.body);
+      } catch (e) {
+        return new NextResponse(
+          JSON.stringify({
+            error: "Invalid JSON in request body",
+            details: (e as Error).message
+          }),
+          {
+            status: 422,
+            headers: {
+              'Content-Type': 'application/json',
+              ...getCorsHeaders(),
+            },
+          }
+        );
+      }
     }
 
     const res = await fetch(
