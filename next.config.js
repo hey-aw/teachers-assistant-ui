@@ -19,7 +19,7 @@ const nextConfig = {
         pathname: '/avatar/**',
       }
     ],
-  },
+  }
 };
 
 module.exports = nextConfig; 

@@ -29,4 +29,5 @@ describe('Auth Handler', () => {
 
     expect(mockHandler).toHaveBeenCalledWith(request);
   });
+
 });

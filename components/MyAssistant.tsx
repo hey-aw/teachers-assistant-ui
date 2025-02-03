@@ -3,13 +3,18 @@
 import { useRef } from "react";
 import { Thread, type TextContentPartComponent } from "@assistant-ui/react";
 import {
+  LangChainMessage,
+  useLangGraphInterruptState,
+  useLangGraphRuntime,
+  useLangGraphSendCommand,
+} from "@assistant-ui/react-langgraph";
+import {
   CompositeAttachmentAdapter,
   SimpleImageAttachmentAdapter,
   SimpleTextAttachmentAdapter,
 } from "@assistant-ui/react";
-import { useLangGraphRuntime } from "@assistant-ui/react-langgraph";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
@@ -54,7 +59,7 @@ export function MyAssistant() {
       return sendMessage({
         threadId,
         messages,
-        command
+        command,
       });
     },
     onSwitchToNewThread: async () => {

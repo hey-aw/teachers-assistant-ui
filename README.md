@@ -2,13 +2,31 @@ This is the [assistant-ui](https://github.com/Yonom/assistant-ui) starter projec
 
 ## Getting Started
 
-First, add your langgraph API url and assistant id to `.env.local` file:
+First, add your configuration to `.env.local`. You have two options for setup:
+
+### Option 1: Using the Next.js API Proxy (Recommended)
+
+This approach keeps your API key secure on the server side.
 
 ```
-LANGCHAIN_API_KEY=your_langchain_api_key
+# Server-side only - used by the Next.js API route
+LANGSMITH_API_KEY=your_api_key
 LANGGRAPH_API_URL=your_langgraph_api_url
-NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=your_assistant_id_or_graph_id 
+
+# Public - safe to expose to the client
+NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=your_assistant_id_or_graph_id
 ```
+
+### Option 2: Direct API Access
+
+If you prefer to access the LangGraph API directly (not recommended for production):
+
+```
+NEXT_PUBLIC_LANGGRAPH_API_URL=your_langgraph_api_url
+NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=your_assistant_id_or_graph_id
+```
+
+Note: Do not set both `LANGGRAPH_API_URL` and `NEXT_PUBLIC_LANGGRAPH_API_URL`. Choose one approach or the other.
 
 Then, run the development server:
 
