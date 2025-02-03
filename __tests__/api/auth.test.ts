@@ -90,5 +90,6 @@ describe('Auth Routes', () => {
             const data = await response.clone().json();
             expect(data).toEqual({ user: null });
         });
+
     });
 });

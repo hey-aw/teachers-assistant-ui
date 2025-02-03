@@ -14,11 +14,17 @@ export default function ProfilePage() {
         );
     }
 
-    if (error) return (
-        <div className="flex justify-center items-center min-h-[50vh]">
-            <div className="text-red-500">{error.message}</div>
-        </div>
-    );
+    if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('Unprocessable Entity')) {
+            errorMessage = 'The request could not be processed. Please check your input and try again.';
+        }
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <div className="text-red-500">{errorMessage}</div>
+            </div>
+        );
+    }
 
     if (!user) return (
         <div className="flex justify-center items-center min-h-[50vh]">
@@ -55,4 +61,4 @@ export default function ProfilePage() {
             </div>
         </div>
     );
-} 
+}

@@ -19,10 +19,7 @@ const nextConfig = {
         pathname: '/avatar/**',
       }
     ],
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  }
 };
 
 module.exports = nextConfig; 
