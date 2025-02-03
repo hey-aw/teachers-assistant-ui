@@ -12,11 +12,17 @@ export default function Home() {
     </main>
   );
 
-  if (error) return (
-    <main className="h-dvh flex items-center justify-center">
-      <div>{error.message}</div>
-    </main>
-  );
+  if (error) {
+    let errorMessage = error.message;
+    if (error.message.includes('Unprocessable Entity')) {
+      errorMessage = 'The request could not be processed. Please check your input and try again.';
+    }
+    return (
+      <main className="h-dvh flex items-center justify-center">
+        <div>{errorMessage}</div>
+      </main>
+    );
+  }
 
   if (user) {
     return (
