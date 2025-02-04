@@ -51,3 +51,16 @@ Ensure `pnpm` is installed before running any commands. You can install it globa
 ```bash
 npm install -g pnpm
 ```
+
+## Authentication
+
+This project uses Azure Static Web Apps' built-in authentication with basic password protection. This provides a simple and secure way to protect your application without implementing a full authentication system.
+
+To configure authentication:
+
+1. Deploy your app to Azure Static Web Apps
+2. In the Azure Portal, navigate to your Static Web App
+3. Go to Settings > Authentication
+4. Enable Basic Authentication and set up your credentials
+
+For more information, see [Azure Static Web Apps Authentication](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization).
