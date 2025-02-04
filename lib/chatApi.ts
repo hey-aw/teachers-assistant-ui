@@ -13,9 +13,13 @@ export class ChatApiError extends Error {
 }
 
 const createClient = () => {
-  const apiUrl =
-    process.env["NEXT_PUBLIC_LANGGRAPH_API_URL"] ||
-    new URL("/api", window.location.href).href;
+  const apiUrl = process.env["NEXT_PUBLIC_LANGGRAPH_API_URL"] ||
+    (typeof window !== 'undefined' ? new URL("/api", window.location.href).href : 'http://localhost:3000/api');
+
+  if (!apiUrl) {
+    throw new ChatApiError('NEXT_PUBLIC_LANGGRAPH_API_URL is not configured');
+  }
+
   return new Client({
     apiUrl,
   });
