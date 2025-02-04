@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import "./globals.css";
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../i18n';
+import { MockUserProvider } from '@/lib/auth/MockUserProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {DISABLE_AUTH === 'true' ? (
-          content
+          <MockUserProvider>
+            {content}
+          </MockUserProvider>
         ) : (
           <UserProvider>
             {content}
