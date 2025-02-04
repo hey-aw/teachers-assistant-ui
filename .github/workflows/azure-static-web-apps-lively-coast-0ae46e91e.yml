@@ -34,6 +34,7 @@ jobs:
           app_location: '/'
           api_location: 'api'
           output_location: 'out'
+          skip_deploy_on_missing_secrets: true
         env:
           NEXT_PUBLIC_LANGGRAPH_API_URL: ${{ env.NEXT_PUBLIC_LANGGRAPH_API_URL }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
@@ -51,3 +52,4 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_COAST_0AE46E91E }}
           action: 'close'
           app_location: '/'
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
