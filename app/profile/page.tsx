@@ -3,6 +3,9 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import React, { useState, useEffect } from 'react';
 
+// Disable static generation for this page since it depends on user authentication
+export const dynamic = 'force-dynamic';
+
 const { DISABLE_AUTH } = process.env;
 
 // Simple hash function for client-side use
