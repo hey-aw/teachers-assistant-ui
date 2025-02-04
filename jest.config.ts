@@ -18,7 +18,7 @@ const config: Config = {
     coverageDirectory: 'coverage',
     coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
     transformIgnorePatterns: [
-        '/node_modules/(?!(@auth0/nextjs-auth0|jose)/)',
+        '/node_modules/',
     ],
 };
 

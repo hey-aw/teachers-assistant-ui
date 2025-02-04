@@ -14,7 +14,6 @@ import {
   SimpleTextAttachmentAdapter,
 } from "@assistant-ui/react";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
@@ -47,7 +46,6 @@ const InterruptUI = () => {
 
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
-  const { user } = useUser();
   const runtime = useLangGraphRuntime({
     threadId: threadIdRef.current,
     stream: async (messages, { command }) => {
