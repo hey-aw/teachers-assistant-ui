@@ -54,13 +54,8 @@ npm install -g pnpm
 
 ## Authentication
 
-This project uses Azure Static Web Apps' built-in authentication with basic password protection. This provides a simple and secure way to protect your application without implementing a full authentication system.
+For now, we use Azure Static Web Apps' built-in password protection for staging environments. This means preview/staging deployments (like PR deployments) are automatically protected with a basic password that Azure Static Web Apps provides.
 
-To configure authentication:
+No additional configuration is needed - this is a default feature of Azure Static Web Apps for non-production environments.
 
-1. Deploy your app to Azure Static Web Apps
-2. In the Azure Portal, navigate to your Static Web App
-3. Go to Settings > Authentication
-4. Enable Basic Authentication and set up your credentials
-
-For more information, see [Azure Static Web Apps Authentication](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization).
+For more information, see [Azure Static Web Apps staging environments](https://learn.microsoft.com/en-us/azure/static-web-apps/review-publish-pull-requests).
