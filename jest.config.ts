@@ -10,16 +10,10 @@ const config: Config = {
     testEnvironment: 'jest-environment-jsdom',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
-        '^react$': '<rootDir>/node_modules/react',
-        '^react-dom$': '<rootDir>/node_modules/react-dom'
     },
-    testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/__tests__/lib/chatApi.test.ts'],
+    testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
     collectCoverage: true,
-    coverageDirectory: 'coverage',
-    coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
-    transformIgnorePatterns: [
-        '/node_modules/(?!(@auth0/nextjs-auth0|jose)/)',
-    ],
+    coverageDirectory: 'coverage'
 };
 
 export default createJestConfig(config);
