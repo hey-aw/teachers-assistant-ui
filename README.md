@@ -51,3 +51,13 @@ Ensure `pnpm` is installed before running any commands. You can install it globa
 ```bash
 npm install -g pnpm
 ```
+
+## Troubleshooting
+
+### Verify `azure_static_web_apps_api_token` Secret
+
+Ensure that the `azure_static_web_apps_api_token` secret is correctly set in your GitHub repository settings. This token is required for the deployment process to authenticate with Azure Static Web Apps.
+
+### Check Build and Deployment Logs
+
+Check the build and deployment logs for any specific error messages that can help identify the root cause of the issue. The logs can provide valuable insights into what might be going wrong during the build or deployment process.
