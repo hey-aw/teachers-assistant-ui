@@ -52,9 +52,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_COAST_0AE46E91E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: 'upload'
-          app_location: '/' # App source code path
-          api_location: '' # Api source code path - optional
-          output_location: '' # Built app content directory - optional
+          app_location: '/'
+          app_build_command: 'npm run build'
+          api_build_command: 'npm run build:api'
         env:
           PR_ENV_NAME: ${{ env.PR_ENV_NAME }}
           DEPLOY_URL: ${{ env.DEPLOY_URL }}
@@ -69,6 +69,7 @@ jobs:
           AUTH0_CLIENT_ID: ${{ env.AUTH0_CLIENT_ID }}
           AUTH0_CLIENT_SECRET: ${{ env.AUTH0_CLIENT_SECRET }}
           AUTH0_AUDIENCE: ${{ env.AUTH0_AUDIENCE }}
+          AZURE_STATIC_WEBAPPS_ENVIRONMENT: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

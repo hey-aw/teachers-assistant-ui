@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom';
-import { Response, Request, Headers } from 'node-fetch';
 import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import type { NextRequest, NextResponse } from 'next/server';
+import type { RequestCookies, ResponseCookies } from 'next/dist/server/web/spec-extension/cookies';
 
 // Initialize i18next for tests
 i18next
@@ -54,20 +55,131 @@ jest.mock('@langchain/langgraph-sdk', () => ({
   })),
 }));
 
-// Mock Web API globals
-global.Response = Response as unknown as typeof globalThis.Response;
-global.Request = Request as unknown as typeof globalThis.Request;
-global.Headers = Headers as unknown as typeof globalThis.Headers;
-
 // Add Web Streams API to global
 Object.assign(global, {
   ReadableStream,
   WritableStream,
-  TransformStream
+  TransformStream,
+  Request: globalThis.Request || class Request { },
+  Response: globalThis.Response || class Response { }
 });
 
 if (typeof window === 'undefined') {
   const { TextEncoder, TextDecoder } = require('util');
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;
-} 
+}
+
+// Mock window.fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve(new Response(JSON.stringify({}), {
+    status: 200,
+    headers: new Headers(),
+  }))
+);
+
+// Mock Next.js Request and Response
+const mockHeaders = new Headers();
+
+class MockNextResponse extends Response {
+  static json(data: any, init?: ResponseInit) {
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    return new MockNextResponse(JSON.stringify(data), {
+      ...init,
+      headers
+    });
+  }
+
+  static next() {
+    const response = new MockNextResponse(null, { status: 200 });
+    response._headers = new Headers();
+    return response;
+  }
+
+  static redirect(url: string | URL, status = 307) {
+    const response = new MockNextResponse(null, { status });
+    response._headers = new Headers();
+    response._headers.set('location', url.toString());
+    return response;
+  }
+
+  private _headers: Headers;
+  private _status: number;
+  private _body: string | null;
+
+  constructor(body?: BodyInit | null, init?: ResponseInit) {
+    super(body || null, init);
+    Object.setPrototypeOf(this, MockNextResponse.prototype);
+    this._headers = new Headers(init?.headers);
+    this._status = init?.status || 200;
+    this._body = body?.toString() || null;
+  }
+
+  get headers() {
+    return this._headers;
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  async text() {
+    return this._body || '';
+  }
+
+  async json() {
+    const text = await this.text();
+    return text ? JSON.parse(text) : null;
+  }
+}
+
+class MockNextRequest extends Request {
+  readonly nextUrl: URL;
+  readonly cookies: {
+    get: (name: string) => { value: string | null } | undefined;
+    getAll: () => Array<{ name: string; value: string }>;
+    has: (name: string) => boolean;
+    set: (name: string, value: string) => void;
+    delete: (name: string) => void;
+  };
+
+  constructor(input: RequestInfo | URL, init?: RequestInit) {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    super(url, init);
+    Object.setPrototypeOf(this, MockNextRequest.prototype);
+
+    this.nextUrl = new URL(url);
+
+    const cookieStore = new Map<string, string>();
+    this.cookies = {
+      get: (name) => {
+        const value = cookieStore.get(name);
+        return value ? { value } : undefined;
+      },
+      getAll: () => Array.from(cookieStore.entries()).map(([name, value]) => ({ name, value })),
+      has: (name) => cookieStore.has(name),
+      set: (name, value) => cookieStore.set(name, value),
+      delete: (name) => cookieStore.delete(name)
+    };
+  }
+}
+
+// Mock Next.js
+jest.mock('next/server', () => ({
+  NextResponse: MockNextResponse,
+  NextRequest: MockNextRequest
+}));
+
+// Mock environment variables
+process.env = {
+  ...process.env,
+  LANGGRAPH_API_URL: 'https://api.example.com',
+  LANGSMITH_API_KEY: 'test-api-key',
+  AUTH0_SECRET: 'test-secret',
+  AUTH0_BASE_URL: 'http://localhost:3000',
+  AUTH0_ISSUER_BASE_URL: 'https://test.auth0.com',
+  AUTH0_CLIENT_ID: 'test-client-id',
+  AUTH0_CLIENT_SECRET: 'test-client-secret',
+  AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'preview'
+}; 
