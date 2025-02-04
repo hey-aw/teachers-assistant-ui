@@ -3,6 +3,9 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { MyAssistant } from "@/components/MyAssistant";
 
+// Disable static generation for this page since it depends on user authentication
+export const dynamic = 'force-dynamic';
+
 const { DISABLE_AUTH } = process.env;
 
 export default function Home() {
