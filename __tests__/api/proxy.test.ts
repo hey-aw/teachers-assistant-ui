@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST, PUT, PATCH, DELETE, OPTIONS } from '@/app/api/[..._path]/route';
-import { getAccessToken } from '@auth0/nextjs-auth0/edge';
-
-// Mock Auth0
-jest.mock('@auth0/nextjs-auth0/edge', () => ({
-    getAccessToken: jest.fn()
-}));
 
 // Mock environment variables
 const MOCK_API_KEY = 'test-api-key';
@@ -17,9 +11,6 @@ beforeEach(() => {
 
     // Reset fetch mock
     global.fetch = jest.fn();
-
-    // Setup default Auth0 mock
-    (getAccessToken as jest.Mock).mockResolvedValue({ accessToken: 'mock-token' });
 });
 
 afterEach(() => {
@@ -169,18 +160,6 @@ describe('API Route Handler', () => {
             expect(response.status).toBe(401);
             expect(await response.json()).toEqual(expect.objectContaining({
                 error: expect.stringContaining('API key')
-            }));
-        });
-
-        it('should handle missing auth token', async () => {
-            (getAccessToken as jest.Mock).mockResolvedValueOnce({ accessToken: null });
-
-            const req = new NextRequest('http://localhost:3000/api/test');
-            const response = await GET(req);
-
-            expect(response.status).toBe(401);
-            expect(await response.json()).toEqual(expect.objectContaining({
-                error: expect.stringContaining('Unauthorized')
             }));
         });
     });
