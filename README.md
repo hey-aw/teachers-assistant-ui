@@ -28,6 +28,40 @@ NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID=your_assistant_id_or_graph_id
 
 Note: Do not set both `LANGGRAPH_API_URL` and `NEXT_PUBLIC_LANGGRAPH_API_URL`. Choose one approach or the other.
 
+### Setting Up GitHub Secrets for Deployment Tokens
+
+To securely manage deployment tokens, follow these steps:
+
+1. Go to your repository on GitHub.
+2. Click on the "Settings" tab.
+3. In the left sidebar, click on "Secrets and variables" and then "Actions".
+4. Click on the "New repository secret" button.
+5. Add a new secret with the name `DEPLOYMENT_TOKEN` and paste your deployment token as the value.
+6. Repeat the process for any other secrets required by your workflow files.
+
+### Updating GitHub Actions Workflow Files to Use Secrets
+
+Ensure your GitHub Actions workflow files are configured to use the secrets you have set up. For example, in your `.github/workflows/azure-static-web-apps-lively-coast-0ae46e91e.yml` file, you can add the `deployment_token` secret to the `env` section and update the `Build And Deploy` step to use it:
+
+```yaml
+env:
+  DEPLOYMENT_TOKEN: ${{ secrets.DEPLOYMENT_TOKEN }}
+
+steps:
+  - name: Build And Deploy
+    id: builddeploy
+    uses: Azure/static-web-apps-deploy@v1
+    with:
+      azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_COAST_0AE46E91E }}
+      repo_token: ${{ secrets.GITHUB_TOKEN }}
+      action: 'upload'
+      app_location: '/' # App source code path
+      api_location: '' # Api source code path - optional
+      output_location: '' # Built app content directory - optional
+    env:
+      DEPLOYMENT_TOKEN: ${{ env.DEPLOYMENT_TOKEN }}
+```
+
 Then, run the development server:
 
 ```bash
