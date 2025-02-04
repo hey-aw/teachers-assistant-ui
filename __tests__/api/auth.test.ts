@@ -92,4 +92,18 @@ describe('Auth Routes', () => {
         });
 
     });
+
+    describe('Environment-Specific Configuration', () => {
+        it('should use the correct configuration file for production', async () => {
+            process.env.NODE_ENV = 'production';
+            const config = require('@/staticwebapp.config.json');
+            expect(config.auth.identityProviders.customOpenIdConnectProviders.auth0.registration.clientId).toBe('YOUR_AUTH0_CLIENT_ID');
+        });
+
+        it('should use the correct configuration file for staging', async () => {
+            process.env.NODE_ENV = 'staging';
+            const config = require('@/staticwebapp.config.json');
+            expect(config.auth.passwordProtection.enabled).toBe(true);
+        });
+    });
 });

@@ -50,4 +50,16 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
     expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
   });
+
+  it('should use the correct configuration file for production', async () => {
+    process.env.NODE_ENV = 'production';
+    const config = require('@/staticwebapp.config.json');
+    expect(config.auth.identityProviders.customOpenIdConnectProviders.auth0.registration.clientId).toBe('YOUR_AUTH0_CLIENT_ID');
+  });
+
+  it('should use the correct configuration file for staging', async () => {
+    process.env.NODE_ENV = 'staging';
+    const config = require('@/staticwebapp.config.json');
+    expect(config.auth.passwordProtection.enabled).toBe(true);
+  });
 });

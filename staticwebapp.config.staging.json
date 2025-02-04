@@ -1,0 +1,18 @@
+{
+  "auth": {
+    "passwordProtection": {
+      "enabled": true,
+      "password": "YOUR_SECURE_GUEST_PASSWORD"
+    }
+  },
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/protected/*",
+      "allowedRoles": ["authenticated"]
+    }
+  ]
+}

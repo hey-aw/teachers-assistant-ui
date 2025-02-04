@@ -45,6 +45,14 @@ jobs:
           echo "AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> $GITHUB_ENV
           echo "AUTH0_SCOPE=${{ secrets.AUTH0_SCOPE }}" >> $GITHUB_ENV
 
+      - name: Copy Configuration File Based on Environment
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            cp staticwebapp.config.production.json staticwebapp.config.json
+          else
+            cp staticwebapp.config.staging.json staticwebapp.config.json
+          fi
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -69,6 +77,11 @@ jobs:
           AUTH0_CLIENT_ID: ${{ env.AUTH0_CLIENT_ID }}
           AUTH0_CLIENT_SECRET: ${{ env.AUTH0_CLIENT_SECRET }}
           AUTH0_AUDIENCE: ${{ env.AUTH0_AUDIENCE }}
+
+      - name: Test Password Protection in Staging
+        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+        run: |
+          curl -I https://${{ env.DEPLOY_URL }} | grep "401 Unauthorized"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
