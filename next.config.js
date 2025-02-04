@@ -5,11 +5,6 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.auth0.com',
-        pathname: '/avatar/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         pathname: '/**',
       },
@@ -22,4 +17,4 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
