@@ -5,7 +5,13 @@ import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 
+const { DISABLE_AUTH } = process.env;
+
 export default function AuthButton() {
+    if (DISABLE_AUTH === 'true') {
+        return null; // Don't show auth button when auth is disabled
+    }
+
     const { user, error, isLoading } = useUser();
     const { t } = useTranslation();
 

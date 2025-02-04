@@ -3,16 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const { DISABLE_AUTH } = process.env;
 
-const middleware = DISABLE_AUTH
-  ? (req: NextRequest, _res: NextResponse, next: () => void) => next()
+// If auth is disabled, use a pass-through middleware
+const middleware = DISABLE_AUTH === 'true'
+  ? async (req: NextRequest) => NextResponse.next()
   : withMiddlewareAuthRequired();
 
 export default middleware;
 
+// Configure which paths require authentication
 export const config = {
   matcher: [
-    // Add routes that require authentication
-    '/protected/:path*',
-    '/api/protected/:path*',
-  ],
+    // Add routes that should be protected when auth is enabled
+    '/api/((?!auth).*)',
+    '/protected/:path*'
+  ]
 };

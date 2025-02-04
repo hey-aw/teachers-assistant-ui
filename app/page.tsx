@@ -6,6 +6,15 @@ import { MyAssistant } from "@/components/MyAssistant";
 const { DISABLE_AUTH } = process.env;
 
 export default function Home() {
+  // If auth is disabled, render the main content directly
+  if (DISABLE_AUTH === 'true') {
+    return (
+      <main className="h-dvh">
+        <MyAssistant />
+      </main>
+    );
+  }
+
   const { user, error, isLoading } = useUser();
 
   if (isLoading) return (
@@ -34,19 +43,9 @@ export default function Home() {
     );
   }
 
-  if (DISABLE_AUTH) {
-    return (
-      <main className="h-dvh flex items-center justify-center">
-        <div>Authentication is disabled for this preview build.</div>
-      </main>
-    );
-  }
-
   return (
     <main className="h-dvh flex items-center justify-center">
-      <a href="/api/auth/login" className="text-blue-600 hover:text-blue-800 underline">
-        Login
-      </a>
+      <div>Please log in to access the assistant.</div>
     </main>
   );
 }

@@ -24,28 +24,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = (
+    <I18nextProvider i18n={i18n}>
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
+    </I18nextProvider>
+  );
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <I18nextProvider i18n={i18n}>
-          {DISABLE_AUTH ? (
-            <>
-              <Navbar />
-              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {children}
-              </main>
-            </>
-          ) : (
-            <UserProvider>
-              <Navbar />
-              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {children}
-              </main>
-            </UserProvider>
-          )}
-        </I18nextProvider>
+        {DISABLE_AUTH === 'true' ? (
+          content
+        ) : (
+          <UserProvider>
+            {content}
+          </UserProvider>
+        )}
       </body>
     </html>
   );
