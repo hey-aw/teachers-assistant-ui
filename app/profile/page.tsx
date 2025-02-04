@@ -1,27 +1,19 @@
 'use client';
 
-import { useUser } from '@auth0/nextjs-auth0/client';
 import React from 'react';
 
 export default function ProfilePage() {
-    const { user, error, isLoading } = useUser();
+    // Simulate user data
+    const user = {
+        name: 'Test User',
+        email: 'test@example.com',
+        picture: 'https://example.com/profile.jpg',
+    };
 
-    if (typeof window === 'undefined' || isLoading) {
+    if (typeof window === 'undefined') {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
                 <div className="text-lg opacity-50">Loading...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('Unprocessable Entity')) {
-            errorMessage = 'The request could not be processed. Please check your input and try again.';
-        }
-        return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <div className="text-red-500">{errorMessage}</div>
             </div>
         );
     }

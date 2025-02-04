@@ -1,7 +1,7 @@
-import { useUser } from '@auth0/nextjs-auth0/client';
-
 export function useAuth() {
-  const { user, error, isLoading } = useUser();
+  const user = null;
+  const error = null;
+  const isLoading = false;
 
   return {
     user,
@@ -9,4 +9,4 @@ export function useAuth() {
     isLoading,
     error,
   };
-} 
+}

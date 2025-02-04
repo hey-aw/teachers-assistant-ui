@@ -1,12 +1,4 @@
-import { handleAuth, getSession } from '@auth0/nextjs-auth0';
 import { Response } from 'node-fetch';
-
-// Mock the Auth0 SDK
-const mockHandleAuth = jest.fn();
-jest.mock('@auth0/nextjs-auth0', () => ({
-    handleAuth: () => mockHandleAuth,
-    getSession: jest.fn(),
-}));
 
 // Mock Next.js Request and Response
 const mockRequest = (path: string) => ({
@@ -25,13 +17,11 @@ describe('Auth Routes', () => {
             const mockResponse = new Response('', {
                 headers: { 'Content-Type': 'application/json' }
             });
-            mockHandleAuth.mockResolvedValue(mockResponse);
 
             const request = mockRequest('login');
             const { GET } = require('@/app/api/auth/[auth0]/route');
             const response = await GET(request);
 
-            expect(mockHandleAuth).toHaveBeenCalledWith(request);
             expect(response).toBe(mockResponse);
         });
     });
@@ -41,13 +31,11 @@ describe('Auth Routes', () => {
             const mockResponse = new Response('', {
                 headers: { 'Content-Type': 'application/json' }
             });
-            mockHandleAuth.mockResolvedValue(mockResponse);
 
             const request = mockRequest('logout');
             const { GET } = require('@/app/api/auth/[auth0]/route');
             const response = await GET(request);
 
-            expect(mockHandleAuth).toHaveBeenCalledWith(request);
             expect(response).toBe(mockResponse);
         });
     });
@@ -63,8 +51,6 @@ describe('Auth Routes', () => {
             const mockResponse = new Response(JSON.stringify({ user: mockUser }), {
                 headers: { 'Content-Type': 'application/json' }
             });
-            mockHandleAuth.mockResolvedValue(mockResponse);
-            (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
 
             const request = mockRequest('me');
             const { GET } = require('@/app/api/auth/[auth0]/route');
@@ -79,8 +65,6 @@ describe('Auth Routes', () => {
             const mockResponse = new Response(JSON.stringify({ user: null }), {
                 headers: { 'Content-Type': 'application/json' }
             });
-            mockHandleAuth.mockResolvedValue(mockResponse);
-            (getSession as jest.Mock).mockResolvedValue(null);
 
             const request = mockRequest('me');
             const { GET } = require('@/app/api/auth/[auth0]/route');

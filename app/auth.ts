@@ -1,7 +1,4 @@
-import { getSession } from '@auth0/nextjs-auth0';
-
 export const getUser = async () => {
-    const session = await getSession();
-    return session?.user;
-}; 
-
+    // Update the `getUser` function to remove Auth0 references
+    return null;
+};
