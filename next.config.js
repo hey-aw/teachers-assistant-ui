@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   /* config options here */
   images: {
     remotePatterns: [
@@ -14,6 +15,11 @@ const nextConfig = {
         pathname: '/avatar/**',
       }
     ],
+    unoptimized: true,
+  },
+  // Disable server components since we're doing static export
+  experimental: {
+    appDir: true,
   }
 };
 
