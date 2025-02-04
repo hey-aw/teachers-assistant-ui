@@ -38,8 +38,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const deploymentUrl = `Preview Deployment URL: ${{ steps.builddeploy.outputs.static_web_app_url }}`;
-            github.issues.createComment({
+            const deploymentUrl = `Deployment URL: ${{ steps.builddeploy.outputs.static_web_app_url }}`;
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
