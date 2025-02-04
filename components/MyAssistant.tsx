@@ -8,8 +8,13 @@ import {
   useLangGraphRuntime,
   useLangGraphSendCommand,
 } from "@assistant-ui/react-langgraph";
+import {
+  CompositeAttachmentAdapter,
+  SimpleImageAttachmentAdapter,
+  SimpleTextAttachmentAdapter,
+} from "@assistant-ui/react";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
@@ -54,7 +59,7 @@ export function MyAssistant() {
       return sendMessage({
         threadId,
         messages,
-        command
+        command,
       });
     },
     onSwitchToNewThread: async () => {
@@ -66,6 +71,12 @@ export function MyAssistant() {
       threadIdRef.current = threadId;
       return { messages: (state.values.messages as LangChainMessage[]) ?? [] };
     },
+    adapters: {
+      attachments: new CompositeAttachmentAdapter([
+        new SimpleImageAttachmentAdapter(),
+        new SimpleTextAttachmentAdapter(),
+      ]),
+    },
   });
 
   return (
@@ -76,4 +87,3 @@ export function MyAssistant() {
     />
   );
 }
-
