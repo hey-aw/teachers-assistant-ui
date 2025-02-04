@@ -1,8 +1,11 @@
 import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
+import { NextRequest, NextResponse } from 'next/server';
 
 const { DISABLE_AUTH } = process.env;
 
-const middleware = DISABLE_AUTH ? (req, res, next) => next() : withMiddlewareAuthRequired();
+const middleware = DISABLE_AUTH
+  ? (req: NextRequest, _res: NextResponse, next: () => void) => next()
+  : withMiddlewareAuthRequired();
 
 export default middleware;
 
