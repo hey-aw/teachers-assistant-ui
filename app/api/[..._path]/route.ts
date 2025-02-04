@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 export const runtime = "edge";
 
@@ -21,23 +20,6 @@ function getCorsHeaders() {
 
 async function handleRequest(req: NextRequest, method: string) {
   try {
-    // Get the access token using Edge-compatible method
-    const authResult = await getAccessToken(req, NextResponse.next(), undefined);
-    const accessToken = authResult?.accessToken;
-
-    if (!accessToken) {
-      return new NextResponse(
-        JSON.stringify({ error: "Unauthorized - No valid session" }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            ...getCorsHeaders(),
-          },
-        }
-      );
-    }
-
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
     const url = new URL(req.url);
     const searchParams = new URLSearchParams(url.search);
