@@ -1,14 +1,19 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import MockLoginPage from '@/app/mock-login/page';
 import { getAllMockUsers } from '@/lib/mockAuth';
 import { jest } from '@jest/globals';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import * as cookiesNext from 'cookies-next';
 
-// Mock next/navigation
+// Mock router
 const mockRouter = {
     push: jest.fn(),
-    refresh: jest.fn()
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn()
 };
 
 jest.mock('next/navigation', () => ({
@@ -16,33 +21,22 @@ jest.mock('next/navigation', () => ({
 }));
 
 const createTestWrapper = (children: React.ReactNode) => (
-    <AppRouterContext.Provider value={{
-        push: mockRouter.push,
-        refresh: mockRouter.refresh,
-        back: jest.fn(),
-        forward: jest.fn(),
-        replace: jest.fn(),
-        prefetch: jest.fn()
-    }}>
+    <AppRouterContext.Provider value={mockRouter}>
         {children}
     </AppRouterContext.Provider>
 );
 
-// Mock cookies-next
-const mockSetCookie = jest.fn();
-jest.mock('cookies-next', () => {
-    return {
-        setCookie: mockSetCookie,
-        getCookie: () => null
-    };
-});
+// Mock cookies-next using spyOn
+const mockSetCookie = jest.spyOn(cookiesNext, 'setCookie').mockImplementation((key: string, value: any, options?: any) => { });
+const mockGetCookie = jest.spyOn(cookiesNext, 'getCookie').mockImplementation((key: string) => '');
 
-// Mock timers
-jest.useFakeTimers();
+// Mock timers using spyOn
+jest.spyOn(global, 'setTimeout');
 
 describe('MockLoginPage', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.useFakeTimers();
     });
 
     afterEach(() => {
@@ -70,25 +64,27 @@ describe('MockLoginPage', () => {
         });
     });
 
-    it('sets cookie and redirects when user is selected', () => {
-        render(createTestWrapper(<MockLoginPage />));
+    it('sets cookie and redirects when user is selected', async () => {
         const user = getAllMockUsers()[0];
-        const firstUserButton = screen.getByText(user.name).closest('button');
-        expect(firstUserButton).not.toBeNull();
+        render(createTestWrapper(<MockLoginPage />));
 
-        // Click and advance timers in one act to handle all state updates
-        act(() => {
-            fireEvent.click(firstUserButton!);
-            // Let the cookie set and refresh happen
-            jest.advanceTimersByTime(50);
-            // Let the redirect happen
-            jest.advanceTimersByTime(100);
+        // Find and click the button
+        const button = screen.getByRole('button', { name: new RegExp(user.name) });
+        expect(button).not.toBeNull();
+
+        await act(async () => {
+            fireEvent.click(button);
         });
 
         expect(mockSetCookie).toHaveBeenCalledWith('mockEmail', user.email, {
             path: '/',
             sameSite: 'lax'
         });
+
+        act(() => {
+            jest.advanceTimersByTime(100);
+        });
+
         expect(mockRouter.refresh).toHaveBeenCalled();
         expect(mockRouter.push).toHaveBeenCalledWith('/');
     });
