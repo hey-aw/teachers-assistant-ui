@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import AuthButton from '@/components/AuthButton';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,108 @@ describe('AuthButton', () => {
 
     afterAll(() => {
         process.env = originalEnv;
+    });
+
+    describe('Auth State Transitions', () => {
+        it('should handle loading -> authenticated transition', async () => {
+            // Start with loading state
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: null,
+                isLoading: true,
+                isPreview: false
+            });
+
+            const { rerender } = render(<AuthButton />);
+            expect(screen.getByText('loading')).toBeInTheDocument();
+
+            // Transition to authenticated
+            (useUser as jest.Mock).mockReturnValue({
+                user: { name: 'AW', email: 'aw@eddolearning.com' },
+                error: null,
+                isLoading: false,
+                isPreview: true
+            });
+
+            rerender(<AuthButton />);
+            expect(screen.getByText('Welcome, AW')).toBeInTheDocument();
+        });
+
+        it('should handle loading -> error transition', async () => {
+            // Start with loading state
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: null,
+                isLoading: true,
+                isPreview: false
+            });
+
+            const { rerender } = render(<AuthButton />);
+            expect(screen.getByText('loading')).toBeInTheDocument();
+
+            // Transition to error
+            const errorMessage = 'Authentication failed';
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: new Error(errorMessage),
+                isLoading: false,
+                isPreview: false
+            });
+
+            rerender(<AuthButton />);
+            expect(screen.getByText('error')).toBeInTheDocument();
+        });
+
+        it('should handle loading -> unauthenticated transition', async () => {
+            // Start with loading state
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: null,
+                isLoading: true,
+                isPreview: false
+            });
+
+            const { rerender } = render(<AuthButton />);
+            expect(screen.getByText('loading')).toBeInTheDocument();
+
+            // Transition to unauthenticated
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: null,
+                isLoading: false,
+                isPreview: false
+            });
+
+            rerender(<AuthButton />);
+            const loginButton = screen.getByText('login');
+            expect(loginButton).toBeInTheDocument();
+        });
+
+        it('should handle authenticated -> unauthenticated transition', async () => {
+            // Start with authenticated state
+            (useUser as jest.Mock).mockReturnValue({
+                user: { name: 'AW', email: 'aw@eddolearning.com' },
+                error: null,
+                isLoading: false,
+                isPreview: true
+            });
+
+            const { rerender } = render(<AuthButton />);
+            expect(screen.getByText('Welcome, AW')).toBeInTheDocument();
+
+            // Transition to unauthenticated
+            (useUser as jest.Mock).mockReturnValue({
+                user: null,
+                error: null,
+                isLoading: false,
+                isPreview: true
+            });
+
+            rerender(<AuthButton />);
+            const loginButton = screen.getByText('login');
+            expect(loginButton).toBeInTheDocument();
+            expect(loginButton.getAttribute('href')).toBe('/mock-login');
+        });
     });
 
     describe('Loading State', () => {
