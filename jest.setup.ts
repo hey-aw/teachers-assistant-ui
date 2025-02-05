@@ -136,6 +136,7 @@ class MockNextResponse extends Response {
 
 class MockNextRequest extends Request {
   readonly nextUrl: URL;
+  readonly headers: Headers;
   readonly cookies: {
     get: (name: string) => { value: string | null } | undefined;
     getAll: () => Array<{ name: string; value: string }>;
@@ -145,11 +146,12 @@ class MockNextRequest extends Request {
   };
 
   constructor(input: RequestInfo | URL, init?: RequestInit) {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url || 'http://localhost:3000';
     super(url, init);
     Object.setPrototypeOf(this, MockNextRequest.prototype);
 
     this.nextUrl = new URL(url);
+    this.headers = new Headers(init?.headers);
 
     const cookieStore = new Map<string, string>();
     this.cookies = {

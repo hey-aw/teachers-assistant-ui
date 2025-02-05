@@ -13,7 +13,11 @@ const config: Config = {
     },
     testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
     collectCoverage: true,
-    coverageDirectory: 'coverage'
+    coverageDirectory: 'coverage',
+    transformIgnorePatterns: [
+        '/node_modules/(?!(@assistant-ui|lucide-react)/)',
+    ],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
 };
 
 export default createJestConfig(config);
