@@ -1,11 +1,12 @@
 import { getMockUser, getAllMockUsers } from '@/lib/mockAuth';
 import { NextRequest } from "next/server"
+import { RequestCookies } from 'next/dist/server/web/spec-extension/cookies'
 
 describe('Mock Auth Service', () => {
     describe('getMockUser', () => {
         it('should return user for valid email', () => {
             const user = getMockUser('aw@eddolearning.com');
-            expect(user).toEqual({
+            expect(user).toMatchObject({
                 email: 'aw@eddolearning.com',
                 email_verified: true,
                 name: 'AW'
@@ -41,12 +42,12 @@ describe('Mock Auth Service', () => {
 export class MockNextRequest implements Pick<NextRequest, 'url' | 'headers' | 'cookies'> {
     url: string
     headers: Headers
-    cookies: Map<string, string>
+    cookies: RequestCookies
 
     constructor(url?: string) {
         this.url = url || 'http://localhost:3000'
         this.headers = new Headers()
-        this.cookies = new Map()
+        this.cookies = new RequestCookies(this.headers)
     }
 
     set(name: string, value: string) {

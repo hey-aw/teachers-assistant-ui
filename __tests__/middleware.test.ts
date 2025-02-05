@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, NextFetchEvent } from 'next/server';
 import { middleware } from '@/middleware';
 import { getMockUser } from '@/lib/mockAuth';
 
@@ -13,6 +13,7 @@ jest.mock('@auth0/nextjs-auth0/edge', () => ({
 
 describe('Middleware', () => {
     const originalEnv = process.env;
+    const mockEvent = {} as NextFetchEvent;
 
     beforeEach(() => {
         jest.resetModules();
@@ -30,10 +31,10 @@ describe('Middleware', () => {
 
         it('should redirect to mock-login when no cookie present', () => {
             const request = new NextRequest(new URL('http://localhost/protected/test'));
-            const response = middleware(request);
+            const response = middleware(request, mockEvent);
 
-            expect(response.status).toBe(307); // Temporary redirect
-            expect(response.headers.get('location')).toBe('http://localhost/mock-login');
+            expect((response as NextResponse).status).toBe(307);
+            expect((response as NextResponse).headers.get('location')).toBe('http://localhost/mock-login');
         });
 
         it('should allow access with valid mock user cookie', () => {
@@ -43,10 +44,10 @@ describe('Middleware', () => {
             // Set mock cookie
             request.cookies.set('mockEmail', mockEmail);
 
-            const response = middleware(request);
+            const response = middleware(request, mockEvent);
 
-            expect(response.status).toBe(200);
-            expect(response.headers.get('x-auth-user')).toBe(
+            expect((response as NextResponse).status).toBe(200);
+            expect((response as NextResponse).headers.get('x-auth-user')).toBe(
                 JSON.stringify(getMockUser(mockEmail))
             );
         });
@@ -57,10 +58,10 @@ describe('Middleware', () => {
             // Set invalid mock cookie
             request.cookies.set('mockEmail', 'invalid@email.com');
 
-            const response = middleware(request);
+            const response = middleware(request, mockEvent);
 
-            expect(response.status).toBe(307);
-            expect(response.headers.get('location')).toBe('http://localhost/mock-login');
+            expect((response as NextResponse).status).toBe(307);
+            expect((response as NextResponse).headers.get('location')).toBe('http://localhost/mock-login');
         });
     });
 
@@ -72,10 +73,10 @@ describe('Middleware', () => {
 
         it('should use Auth0 middleware in production', () => {
             const request = new NextRequest(new URL('http://localhost/protected/test'));
-            const response = middleware(request);
+            const response = middleware(request, mockEvent);
 
             expect(response).toBe(mockAuth0Response);
-            expect(response.status).toBe(200);
+            expect((response as NextResponse).status).toBe(200);
         });
     });
 }); 

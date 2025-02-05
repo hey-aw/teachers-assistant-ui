@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { RequestCookies, ResponseCookies } from 'next/dist/server/web/spec-extension/cookies'
 
-export class MockNextRequest implements NextRequest {
+export class MockNextRequest implements Partial<NextRequest> {
     url: string
     headers: Headers
-    cookies: Map<string, string>
-    nextUrl: URL
+    cookies: RequestCookies
+    nextUrl: any // NextURL is internal, using any for test purposes
     method: string = 'GET'
     cache: RequestCache = 'default'
     credentials: RequestCredentials = 'same-origin'
@@ -18,17 +19,25 @@ export class MockNextRequest implements NextRequest {
     signal: AbortSignal = new AbortController().signal
     body: ReadableStream | null = null
     bodyUsed: boolean = false
-    page = { name: 'test', params: {} }
-    ua = { isBot: false }
+    page?: void
+    ua?: void
     geo = { city: '', country: '', region: '', latitude: '', longitude: '' }
     ip = ''
-    [Symbol.for('edge-headers')]: Headers = new Headers()
+    private edgeHeaders: Headers = new Headers()
 
     constructor(url?: string) {
         this.url = url || 'http://localhost:3000'
-        this.nextUrl = new URL(this.url)
+        this.nextUrl = new URL(this.url) // Using URL instead of NextURL for tests
         this.headers = new Headers()
-        this.cookies = new Map()
+        this.cookies = new RequestCookies(this.headers)
+    }
+
+    get [Symbol.for('edge-headers')](): Headers {
+        return this.edgeHeaders
+    }
+
+    set [Symbol.for('edge-headers')](value: Headers) {
+        this.edgeHeaders = value
     }
 
     set(name: string, value: string) {
@@ -49,11 +58,11 @@ export class MockNextRequest implements NextRequest {
     }
 
     blob(): Promise<Blob> {
-        return Promise.resolve(new Blob([]))
+        return Promise.resolve(new Blob())
     }
 
     clone(): NextRequest {
-        return this
+        return this as unknown as NextRequest
     }
 
     formData(): Promise<FormData> {
@@ -70,18 +79,30 @@ export class MockNextRequest implements NextRequest {
 }
 
 export class MockNextResponse extends NextResponse {
-    cookies: Map<string, { value: string; options?: any }>
+    private cookiesMap: ResponseCookies
 
     constructor() {
         super()
-        this.cookies = new Map()
+        this.cookiesMap = new ResponseCookies(this.headers)
     }
 
-    json(data: any) {
-        return NextResponse.json(data)
+    get cookies(): ResponseCookies {
+        return this.cookiesMap
     }
 
-    redirect(url: string) {
+    json(): Promise<any> {
+        return Promise.resolve({})
+    }
+
+    redirect(url: string): NextResponse {
         return NextResponse.redirect(url)
     }
-} 
+}
+
+describe('MockNextRequest', () => {
+    it('should create a mock request with default values', () => {
+        const request = new MockNextRequest()
+        expect(request.url).toBe('http://localhost:3000')
+        expect(request.method).toBe('GET')
+    })
+}) 
