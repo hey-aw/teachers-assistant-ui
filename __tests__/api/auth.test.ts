@@ -1,5 +1,6 @@
 import { handleAuth, getSession } from '@auth0/nextjs-auth0';
-import { Response } from 'node-fetch';
+import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Mock the Auth0 SDK
 const mockHandleAuth = jest.fn();
@@ -8,21 +9,31 @@ jest.mock('@auth0/nextjs-auth0', () => ({
     getSession: jest.fn(),
 }));
 
-// Mock Next.js Request and Response
-const mockRequest = (path: string) => ({
-    url: `http://localhost:3000/api/auth/${path}`,
-    method: 'GET',
-    headers: new Headers(),
-});
+// Mock Next.js Request
+const mockRequest = (path: string) => new NextRequest(
+    new Request(`http://localhost:3000/api/auth/${path}`, {
+        method: 'GET',
+    })
+);
 
 describe('Auth Routes', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        // Set environment variables to ensure we're not in preview mode
+        process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+        process.env.AUTH0_BASE_URL = 'http://localhost:3000';
+    });
+
+    afterEach(() => {
+        // Clean up environment variables
+        delete process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT;
+        delete process.env.AUTH0_BASE_URL;
     });
 
     describe('Login Route', () => {
         it('should handle login requests', async () => {
-            const mockResponse = new Response('', {
+            const mockResponse = NextResponse.json({}, {
+                status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
@@ -38,7 +49,8 @@ describe('Auth Routes', () => {
 
     describe('Logout Route', () => {
         it('should handle logout requests', async () => {
-            const mockResponse = new Response('', {
+            const mockResponse = NextResponse.json({}, {
+                status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
@@ -60,7 +72,8 @@ describe('Auth Routes', () => {
                 email: 'test@example.com'
             };
 
-            const mockResponse = new Response(JSON.stringify({ user: mockUser }), {
+            const mockResponse = NextResponse.json({ user: mockUser }, {
+                status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
@@ -76,7 +89,8 @@ describe('Auth Routes', () => {
         });
 
         it('should return null when not authenticated', async () => {
-            const mockResponse = new Response(JSON.stringify({ user: null }), {
+            const mockResponse = NextResponse.json({ user: null }, {
+                status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
@@ -90,6 +104,5 @@ describe('Auth Routes', () => {
             const data = await response.clone().json();
             expect(data).toEqual({ user: null });
         });
-
     });
 });
