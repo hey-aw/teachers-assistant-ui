@@ -9,6 +9,16 @@ jest.mock('@auth0/nextjs-auth0/client', () => ({
     useUser: jest.fn()
 }));
 
+// Mock cookies-next
+jest.mock('cookies-next', () => ({
+    getCookie: jest.fn()
+}));
+
+// Mock mockAuth
+jest.mock('@/lib/mockAuth', () => ({
+    getMockUser: jest.fn()
+}));
+
 // Mock next/image
 jest.mock('next/image', () => ({
     __esModule: true,
@@ -52,7 +62,7 @@ describe('AuthButton', () => {
     describe('with Auth0 enabled', () => {
         beforeEach(() => {
             process.env.NEXT_PUBLIC_MOCK_AUTH = 'false';
-          });
+        });
 
         describe('Auth State Transitions', () => {
 
@@ -257,13 +267,53 @@ describe('AuthButton', () => {
             process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
         });
 
-        it('should show mock login link', () => {
-            render(<AuthButton />);
+        describe('Auth State Transitions', () => {
+            describe('No cookie', () => {
+                it('should show mock login link', () => {
+                    render(<AuthButton />);
+                    const loginButton = screen.getByText('Login');
+                    expect(loginButton).toBeInTheDocument();
+                    expect(loginButton.getAttribute('href')).toBe('/mock-login');
+                });
+            });
 
-            const loginButton = screen.getByText('Login');
-            expect(loginButton).toBeInTheDocument();
-            expect(loginButton.getAttribute('href')).toBe('/mock-login');
+            describe('Cookie present', () => {
+                beforeEach(() => {
+                    const mockUser = {
+                        name: 'Test User',
+                        nickname: 'tester',
+                        picture: 'https://example.com/avatar.jpg'
+                    };
+
+                    // Set up mock returns for this test
+                    const { getCookie } = require('cookies-next');
+                    const { getMockUser } = require('@/lib/mockAuth');
+                    getCookie.mockReturnValue('test@example.com');
+                    getMockUser.mockReturnValue(mockUser);
+
+                    // Mock process.env for preview mode
+                    process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
+                });
+
+                afterEach(() => {
+                    const { getCookie } = require('cookies-next');
+                    const { getMockUser } = require('@/lib/mockAuth');
+                    getCookie.mockReset();
+                    getMockUser.mockReset();
+                    process.env.NEXT_PUBLIC_MOCK_AUTH = 'false';
+                });
+
+                it('should show mock user info and logout button', () => {
+                    render(<AuthButton />);
+                    expect(screen.getByText('Welcome, tester')).toBeInTheDocument();
+                    expect(screen.getByAltText('User avatar')).toBeInTheDocument();
+                    const logoutButton = screen.getByText('Logout');
+                    expect(logoutButton).toBeInTheDocument();
+                    expect(logoutButton.getAttribute('href')).toBe('/');
+                });
+            });
         });
     });
+
 
 });

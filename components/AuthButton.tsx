@@ -11,13 +11,43 @@ const isPreviewEnvironment = () => {
     return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
+interface UserDisplayInfo {
+    name: string;
+    nickname?: string;
+    picture?: string;
+}
+
+const getUserDisplayInfo = (user: any): UserDisplayInfo => {
+    // For mock users, use name as nickname
+    if (process.env.NEXT_PUBLIC_MOCK_AUTH === 'true') {
+        return {
+            name: user.name,
+            nickname: user.name,
+            picture: undefined
+        };
+    }
+    // For Auth0 users, use their profile info
+    return {
+        name: user.name,
+        nickname: user.nickname,
+        picture: user.picture
+    };
+};
+
 export default function AuthButton() {
     const { user, error, isLoading } = useAuth();
     const { t } = useTranslation();
-    const [isPreview, setIsPreview] = useState(false);
+    const [isPreview, setIsPreview] = useState(isPreviewEnvironment());
 
     useEffect(() => {
-        setIsPreview(isPreviewEnvironment());
+        const updatePreviewState = () => {
+            setIsPreview(isPreviewEnvironment());
+        };
+        updatePreviewState();
+
+        // Check for cookie changes
+        const interval = setInterval(updatePreviewState, 1000);
+        return () => clearInterval(interval);
     }, []);
 
     // Debug user state on every render
@@ -26,21 +56,22 @@ export default function AuthButton() {
         error,
         isLoading,
         isPreview,
-        welcomeMessage: user ? t('welcome_user', { name: user.nickname || user.name }) : null,
-        mockEmailCookie: getCookie('mockEmail')
+        welcomeMessage: user ? t('welcome_user', { name: user.name }) : null,
+        mockEmailCookie: getCookie('mockUserEmail')
     });
 
     if (isLoading) return <div>{t('loading')}</div>;
     if (error) return <div>{t('error', { message: error.message })}</div>;
 
     if (user) {
+        const userInfo = getUserDisplayInfo(user);
         return (
             <div className="flex items-center gap-4">
-                <span className="block">{t('welcome_user', { name: user.nickname || user.name })}</span>
-                {user.picture && (
+                <span className="block">{t('welcome_user', { name: userInfo.nickname || userInfo.name })}</span>
+                {userInfo.picture && (
                     <Link href="/profile" className="hover:opacity-80 transition-opacity">
                         <Image
-                            src={user.picture}
+                            src={userInfo.picture}
                             alt={'User avatar'}
                             width={32}
                             height={32}
