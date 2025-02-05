@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const isPreviewEnvironment = () => {
+  return process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nextProvider i18n={i18n}>
-          <UserProvider>
+          <UserProvider
+            loginUrl="/mock-login"
+            profileUrl="/api/auth/userinfo"
+            debug={true}
+          >
             <Navbar />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {children}

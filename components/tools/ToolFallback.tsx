@@ -1,9 +1,30 @@
 import { ToolCallContentPartComponent } from "@assistant-ui/react";
-import { INTERNAL } from "@assistant-ui/react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
-const { TooltipIconButton } = INTERNAL;
+const TooltipButton = ({ tooltip, onClick, children }: { tooltip: string; onClick: () => void; children: React.ReactNode }) => {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={onClick}>
+            {children}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 export const ToolFallback: ToolCallContentPartComponent = ({
   toolName,
@@ -19,12 +40,12 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           Used tool: <b>{toolName}</b>
         </p>
         <div className="flex-grow" />
-        <TooltipIconButton
+        <TooltipButton
           tooltip={isCollapsed ? "Expand" : "Collapse"}
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </TooltipIconButton>
+        </TooltipButton>
       </div>
       {!isCollapsed && (
         <div className="flex flex-col gap-2 border-t pt-2">

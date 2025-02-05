@@ -10,10 +10,15 @@ const config: Config = {
     testEnvironment: 'jest-environment-jsdom',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
+        '^lucide-react$': '<rootDir>/node_modules/lucide-react/dist/cjs/lucide-react.js',
     },
     testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
     collectCoverage: true,
-    coverageDirectory: 'coverage'
+    coverageDirectory: 'coverage',
+    transformIgnorePatterns: [
+        '/node_modules/(?!(@assistant-ui|lucide-react)/)',
+    ],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
 };
 
 export default createJestConfig(config);
