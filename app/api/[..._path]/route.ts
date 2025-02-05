@@ -124,6 +124,22 @@ async function handleRequest(req: NextRequest, method: string) {
     const res = await fetch(apiUrl, options);
     console.log('Response status:', res.status, 'ok:', res.ok);
 
+    // Check if this is a streaming response
+    const contentType = res.headers.get('content-type');
+    if (contentType?.includes('text/event-stream')) {
+      console.log('Handling streaming response');
+      return new NextResponse(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          ...getCorsHeaders(),
+        },
+      });
+    }
+
+    // For non-streaming responses, continue with JSON handling
     // Safely get headers
     const headers: Record<string, string> = {};
     try {
