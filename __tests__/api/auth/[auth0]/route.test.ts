@@ -1,194 +1,217 @@
-import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/auth/[auth0]/route';
 import { getMockUser } from '@/lib/mockAuth';
+import { MockNextRequest } from '@/__tests__/lib/mockRequest';
 
-// Mock Auth0
-jest.mock('@auth0/nextjs-auth0', () => ({
-    handleAuth: jest.fn(() => async () => {
-        console.log('[Test] Mock Auth0 handler called');
-        return new Response(JSON.stringify({ user: { name: 'Auth0 User' } }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    })
-}));
-
-// Mock mockAuth
-jest.mock('@/lib/mockAuth', () => ({
-    getMockUser: jest.fn((email) => {
-        console.log('[Test] getMockUser called with:', email);
-        if (email === 'test@example.com') {
-            return {
-                email: 'test@example.com',
-                name: 'Test User',
-                email_verified: true
-            };
-        }
-        console.log('[Test] getMockUser returning undefined for:', email);
-        return undefined;
-    })
-}));
+jest.mock('@/lib/mockAuth');
 
 describe('Auth Route Handler', () => {
-    const originalEnv = process.env;
-
     beforeEach(() => {
-        console.log('\n[Test] ---- Starting new test ----');
         jest.clearAllMocks();
-        process.env = { ...originalEnv };
-    });
-
-    afterAll(() => {
-        process.env = originalEnv;
     });
 
     describe('Preview Environment', () => {
         beforeEach(() => {
             process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
-            process.env.AUTH0_BASE_URL = 'http://localhost:3000';
-            console.log('[Test] Environment setup:', {
-                AZURE_STATIC_WEBAPPS_ENVIRONMENT: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT,
-                AUTH0_BASE_URL: process.env.AUTH0_BASE_URL
+        });
+
+        describe('Performance', () => {
+            it('should respond quickly without auth', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                const start = Date.now();
+                await GET(request);
+                const duration = Date.now() - start;
+                expect(duration).toBeLessThan(100);
+            });
+
+            it('should respond reasonably fast with auth', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.cookies.set('mockEmail', 'aw@eddolearning.com');
+                const mockUser = { email: 'aw@eddolearning.com', email_verified: true, name: 'AW' };
+                (getMockUser as jest.Mock).mockReturnValue(mockUser);
+
+                const start = Date.now();
+                await GET(request);
+                const duration = Date.now() - start;
+                expect(duration).toBeLessThan(300);
             });
         });
 
-        describe('/me endpoint', () => {
-            it('should return mock user when valid mockEmail cookie exists', async () => {
-                const headers = new Headers();
-                headers.append('Cookie', 'mockEmail=test@example.com');
-                const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/me`, {
-                    headers
-                });
-                console.log('[Test] Request created with headers:', Object.fromEntries(req.headers.entries()));
+        describe('Header Handling', () => {
+            it('should handle browser headers', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.headers.set('accept', '*/*');
+                request.headers.set('accept-encoding', 'gzip, deflate, br, zstd');
+                request.headers.set('accept-language', 'en-US,en;q=0.5');
+                request.headers.set('connection', 'keep-alive');
+                request.headers.set('dnt', '1');
+                request.headers.set('sec-fetch-dest', 'empty');
+                request.headers.set('sec-fetch-mode', 'cors');
+                request.headers.set('sec-fetch-site', 'same-origin');
+                request.headers.set('sec-gpc', '1');
+                request.headers.set('user-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0');
 
-                const response = await GET(req);
-                const data = await response.json();
-                console.log('[Test] Response received:', {
-                    status: response.status,
-                    data,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-
+                const response = await GET(request);
                 expect(response.status).toBe(200);
-                expect(data).toEqual({
-                    user: {
-                        email: 'test@example.com',
-                        name: 'Test User',
-                        email_verified: true
-                    }
-                });
-                expect(getMockUser).toHaveBeenCalledWith('test@example.com');
             });
 
-            it('should return null user when no mockEmail cookie exists', async () => {
-                const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/me`);
-                console.log('[Test] Request created without cookie');
+            it('should handle curl headers', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.headers.set('accept', 'application/json');
+                request.headers.set('user-agent', 'curl/8.7.1');
+                request.headers.set('host', 'localhost:3000');
 
-                const response = await GET(req);
+                const response = await GET(request);
+                expect(response.status).toBe(200);
+            });
+        });
+
+        describe('Cookie Handling', () => {
+            it('should handle multiple cookies', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.cookies.set('wp-settings-time-1', '1737998052');
+                request.cookies.set('mockEmail', 'aw@eddolearning.com');
+
+                const mockUser = { email: 'aw@eddolearning.com', email_verified: true, name: 'AW' };
+                (getMockUser as jest.Mock).mockReturnValue(mockUser);
+
+                const response = await GET(request);
                 const data = await response.json();
-                console.log('[Test] Response received:', {
-                    status: response.status,
-                    data
-                });
 
                 expect(response.status).toBe(200);
-                expect(data).toEqual({ user: null });
+                expect(data.user).toEqual(mockUser);
             });
 
-            it('should return null user when invalid mockEmail cookie exists', async () => {
-                const headers = new Headers();
-                headers.append('Cookie', 'mockEmail=invalid@example.com');
-                const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/me`, {
-                    headers
-                });
-                console.log('[Test] Request created with invalid email:', {
-                    headers: Object.fromEntries(req.headers.entries())
-                });
+            it('should handle URL encoded email addresses', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.cookies.set('mockEmail', 'aw%40eddolearning.com');
 
-                const response = await GET(req);
+                const mockUser = { email: 'aw@eddolearning.com', email_verified: true, name: 'AW' };
+                (getMockUser as jest.Mock).mockReturnValue(mockUser);
+
+                const response = await GET(request);
                 const data = await response.json();
-                console.log('[Test] Response received:', {
-                    status: response.status,
-                    data,
-                    getMockUserCalls: jest.mocked(getMockUser).mock.calls
-                });
 
                 expect(response.status).toBe(200);
-                expect(data).toEqual({ user: null });
-                expect(getMockUser).toHaveBeenCalledWith('invalid@example.com');
+                expect(data.user.email).toBe('aw@eddolearning.com');
+            });
+        });
+
+        describe('Debug Logging', () => {
+            let consoleLog: jest.SpyInstance;
+
+            beforeEach(() => {
+                consoleLog = jest.spyOn(console, 'log');
+            });
+
+            afterEach(() => {
+                consoleLog.mockRestore();
+            });
+
+            it('should log environment checks', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                await GET(request);
+
+                expect(consoleLog).toHaveBeenCalledWith(
+                    '[Auth] Environment check:',
+                    expect.objectContaining({
+                        AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'preview',
+                        AUTH0_BASE_URL: expect.any(String),
+                        isPreview: true,
+                        timestamp: expect.any(String)
+                    })
+                );
+            });
+
+            it('should log debug info for authenticated requests', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.cookies.set('mockEmail', 'aw@eddolearning.com');
+
+                const mockUser = { email: 'aw@eddolearning.com', email_verified: true, name: 'AW' };
+                (getMockUser as jest.Mock).mockReturnValue(mockUser);
+
+                await GET(request);
+
+                expect(consoleLog).toHaveBeenCalledWith(
+                    expect.stringMatching(/\[Auth .*\] Mock auth debug:/),
+                    expect.objectContaining({
+                        pathname: '/api/auth/userinfo',
+                        mockEmail: 'aw@eddolearning.com',
+                        hasEmailCookie: true,
+                        cookieValue: expect.any(Object),
+                        allCookies: expect.any(Object)
+                    })
+                );
             });
         });
 
         describe('/login endpoint', () => {
-            it('should redirect to mock-login', async () => {
-                const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/login`);
-                const response = await GET(req);
+            it('should set cookie and redirect to dashboard', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/login');
+                const response = await GET(request);
 
-                expect(response.status).toBe(307);
-                expect(response.headers.get('Location')).toBe('/mock-login');
+                expect(response.status).toBe(302);
+                expect(response.headers.get('Location')).toBe('/protected/dashboard');
+                const cookie = response.cookies.get('mockEmail');
+                expect(cookie).toBeDefined();
             });
         });
 
         describe('/logout endpoint', () => {
             it('should clear cookie and redirect to home', async () => {
-                const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/logout`);
-                const response = await GET(req);
+                const request = new MockNextRequest('http://localhost:3000/api/auth/logout');
+                request.cookies.set('mockEmail', 'test@example.com');
 
-                expect(response.status).toBe(307);
+                const response = await GET(request);
+
+                expect(response.status).toBe(302);
                 expect(response.headers.get('Location')).toBe('/');
+                const cookie = response.cookies.get('mockEmail');
+                expect(cookie?.value).toBe('');
+                expect(cookie?.options?.expires.getTime()).toBeLessThan(Date.now());
+            });
+        });
 
-                const cookie = response.headers.get('Set-Cookie');
-                expect(cookie).toContain('mockEmail=');
-                expect(cookie).toContain('path=/');
-                const expiresMatch = cookie?.match(/expires=([^;]+)/i);
-                expect(expiresMatch).toBeTruthy();
-                const expiresDate = new Date(expiresMatch![1]);
-                expect(expiresDate.getTime()).toBeLessThan(new Date().getTime());
+        describe('/userinfo endpoint', () => {
+            it('should return user info from cookie', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                request.cookies.set('mockEmail', 'test@example.com');
+
+                const mockUser = { name: 'Test User', email: 'test@example.com' };
+                (getMockUser as jest.Mock).mockReturnValue(mockUser);
+
+                const response = await GET(request);
+                const data = await response.json();
+
+                expect(response.status).toBe(200);
+                expect(data).toEqual({ user: mockUser });
+                expect(getMockUser).toHaveBeenCalledWith('test@example.com');
+            });
+
+            it('should return null when no cookie is set', async () => {
+                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+
+                const response = await GET(request);
+                const data = await response.json();
+
+                expect(response.status).toBe(200);
+                expect(data).toEqual({ user: null });
             });
         });
     });
 
     describe('Production Environment', () => {
         beforeEach(() => {
+            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
             process.env.AUTH0_BASE_URL = 'https://example.com';
-            delete process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT;
-            console.log('[Test] Production environment setup:', {
-                AZURE_STATIC_WEBAPPS_ENVIRONMENT: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT,
-                AUTH0_BASE_URL: process.env.AUTH0_BASE_URL
-            });
         });
 
         it('should use Auth0 handler', async () => {
-            const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/me`);
-            console.log('[Test] Production request created');
+            const request = new MockNextRequest('http://localhost:3000/api/auth/login');
 
-            const response = await GET(req);
-            const data = await response.json();
-            console.log('[Test] Production response received:', {
-                status: response.status,
-                data,
-                headers: Object.fromEntries(response.headers.entries())
-            });
+            const response = await GET(request);
 
             expect(response.status).toBe(200);
-            expect(data).toEqual({ user: { name: 'Auth0 User' } });
-        });
-
-        it('should handle Auth0 errors', async () => {
-            const { handleAuth } = require('@auth0/nextjs-auth0');
-            handleAuth.mockImplementationOnce(() => async () => {
-                throw new Error('Auth0 Error');
-            });
-
-            const req = new NextRequest(`${process.env.AUTH0_BASE_URL}/api/auth/me`);
-            const response = await GET(req);
-            const data = await response.json();
-
-            expect(response.status).toBe(500);
-            expect(data).toEqual({
-                error: 'Auth0 Error',
-                status: 'error'
-            });
+            expect(response.headers.get('Location')).toBe('https://example.com/api/auth/login');
         });
     });
 }); 

@@ -1,17 +1,24 @@
 'use client';
 
-import { useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { getCookie } from 'cookies-next';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 const isPreviewEnvironment = () => {
-    return process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+    const isPreview = process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+    console.log('Preview environment check:', {
+        AZURE_ENV: process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT,
+        AUTH0_BASE_URL: process.env.NEXT_PUBLIC_AUTH0_BASE_URL,
+        isPreview
+    });
+    return isPreview;
 }
 
 export default function AuthButton() {
-    const { user, error, isLoading } = useUser();
+    const { user, error, isLoading } = useAuth();
     const { t } = useTranslation();
     const [isPreview, setIsPreview] = useState(false);
 
@@ -19,13 +26,23 @@ export default function AuthButton() {
         setIsPreview(isPreviewEnvironment());
     }, []);
 
+    // Debug user state on every render
+    console.log('Auth State:', {
+        user,
+        error,
+        isLoading,
+        isPreview,
+        welcomeMessage: user ? t('welcome_user', { name: user.nickname || user.name }) : null,
+        mockEmailCookie: getCookie('mockEmail')
+    });
+
     if (isLoading) return <div>{t('loading')}</div>;
     if (error) return <div>{t('error', { message: error.message })}</div>;
 
     if (user) {
         return (
             <div className="flex items-center gap-4">
-                <span className="hidden sm:block">{t('welcome_user', { name: user.nickname || user.name })}</span>
+                <span className="block">{t('welcome_user', { name: user.nickname || user.name })}</span>
                 {user.picture && (
                     <Link href="/profile" className="hover:opacity-80 transition-opacity">
                         <Image

@@ -15,14 +15,23 @@ const isPreviewEnvironment = () => {
 
 export const GET = async (req: NextRequest) => {
     const requestId = Math.random().toString(36).substring(7);
-    console.log(`[Auth ${requestId}] Request received:`, {
+
+    // Debug request details
+    const debugInfo = {
         url: req.nextUrl.toString(),
         pathname: req.nextUrl.pathname,
         method: req.method,
         headers: Object.fromEntries(req.headers.entries()),
         cookies: Object.fromEntries(req.cookies.getAll().map(c => [c.name, c.value])),
+        isPreview: isPreviewEnvironment(),
+        env: {
+            AZURE_ENV: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT,
+            AUTH0_BASE_URL: process.env.AUTH0_BASE_URL
+        },
         timestamp: new Date().toISOString()
-    });
+    };
+
+    console.log(`[Auth ${requestId}] Full debug info:`, debugInfo);
 
     const isPreview = isPreviewEnvironment();
     console.log(`[Auth ${requestId}] Environment status:`, { isPreview });
@@ -30,13 +39,15 @@ export const GET = async (req: NextRequest) => {
     // Handle mock auth in preview environment
     if (isPreview) {
         const url = req.nextUrl;
-        // If this is the /me endpoint
-        if (url.pathname === '/api/auth/me') {
+        // If this is the /me or /userinfo endpoint
+        if (url.pathname === '/api/auth/me' || url.pathname === '/api/auth/userinfo') {
             const mockEmail = req.cookies.get('mockEmail')?.value;
-            console.log(`[Auth ${requestId}] ME endpoint:`, {
+            console.log(`[Auth ${requestId}] Mock auth debug:`, {
+                pathname: url.pathname,
                 mockEmail,
                 hasEmailCookie: !!mockEmail,
-                cookieValue: req.cookies.get('mockEmail')
+                cookieValue: req.cookies.get('mockEmail'),
+                allCookies: Object.fromEntries(req.cookies.getAll().map(c => [c.name, c.value]))
             });
 
             if (mockEmail) {

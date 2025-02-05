@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
+      "debug_test": "Debug Test Message",
       "welcome": "Welcome",
       "protected_dashboard": "Protected Dashboard",
       "welcome_user": "Welcome, {{name}}!",

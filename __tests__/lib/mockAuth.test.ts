@@ -1,4 +1,5 @@
 import { getMockUser, getAllMockUsers } from '@/lib/mockAuth';
+import { NextRequest } from "next/server"
 
 describe('Mock Auth Service', () => {
     describe('getMockUser', () => {
@@ -35,4 +36,50 @@ describe('Mock Auth Service', () => {
             ]);
         });
     });
-}); 
+});
+
+export class MockNextRequest implements Pick<NextRequest, 'url' | 'headers' | 'cookies'> {
+    url: string
+    headers: Headers
+    cookies: Map<string, string>
+
+    constructor(url?: string) {
+        this.url = url || 'http://localhost:3000'
+        this.headers = new Headers()
+        this.cookies = new Map()
+    }
+
+    set(name: string, value: string) {
+        this.cookies.set(name, value)
+    }
+
+    get(name: string) {
+        return this.cookies.get(name)
+    }
+
+    delete(name: string) {
+        this.cookies.delete(name)
+    }
+}
+
+export class MockNextResponse {
+    status: number
+    headers: Headers
+    cookies: Map<string, { value: string; options?: any }>
+
+    constructor() {
+        this.status = 200
+        this.headers = new Headers()
+        this.cookies = new Map()
+    }
+
+    json(data: any) {
+        return { ...this, data }
+    }
+
+    redirect(url: string) {
+        this.headers.set('Location', url)
+        this.status = 302
+        return this
+    }
+} 
