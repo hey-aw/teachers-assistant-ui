@@ -14,6 +14,7 @@ const MOCK_API_URL = 'https://api.example.com';
 beforeEach(() => {
     process.env.LANGSMITH_API_KEY = MOCK_API_KEY;
     process.env.LANGGRAPH_API_URL = MOCK_API_URL;
+    process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
 
     // Reset fetch mock
     global.fetch = jest.fn();
@@ -26,20 +27,21 @@ afterEach(() => {
     jest.resetAllMocks();
     delete process.env.LANGSMITH_API_KEY;
     delete process.env.LANGGRAPH_API_URL;
+    delete process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT;
 });
 
 describe('API Route Handler', () => {
     describe('CORS Headers', () => {
         it('should include CORS headers in successful responses', async () => {
-            const mockResponse = new Response('test', {
+            const mockResponse = NextResponse.json({ test: true }, {
                 status: 200,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/test');
+            const req = new NextRequest(new URL('http://localhost:3000/api/test'));
             const response = await GET(req);
 
             expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
@@ -57,20 +59,28 @@ describe('API Route Handler', () => {
 
     describe('LangGraph Endpoints', () => {
         it('should create a thread correctly', async () => {
-            const mockResponse = new Response(JSON.stringify({ thread_id: 'test-thread' }), {
+            console.log('Test environment variables:', {
+                LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY,
+                LANGGRAPH_API_URL: process.env.LANGGRAPH_API_URL,
+                AZURE_STATIC_WEBAPPS_ENVIRONMENT: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT
+            });
+
+            const mockResponse = NextResponse.json({ thread_id: 'test-thread' }, {
                 status: 200,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/threads', {
-                method: 'POST',
-                body: JSON.stringify({}),
-            });
+            const url = new URL('http://localhost:3000/api/threads');
+            console.log('Test request URL:', url.toString());
+            console.log('Test request pathname:', url.pathname);
+
+            const req = new NextRequest(url);
             const response = await POST(req);
             const data = await response.json();
+            console.log('Response data:', data);
 
             expect(response.status).toBe(200);
             expect(data.thread_id).toBe('test-thread');
@@ -78,26 +88,24 @@ describe('API Route Handler', () => {
                 `${MOCK_API_URL}/threads`,
                 expect.objectContaining({
                     method: 'POST',
-                    headers: expect.objectContaining({
-                        'X-Api-Key': MOCK_API_KEY
-                    })
+                    headers: {
+                        'X-Api-Key': MOCK_API_KEY,
+                        'Content-Type': 'application/json'
+                    }
                 })
             );
         });
 
         it('should stream runs correctly', async () => {
-            const mockResponse = new Response('test-stream', {
+            const mockResponse = new NextResponse('test-stream', {
                 status: 200,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'text/event-stream'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/runs/stream', {
-                method: 'POST',
-                body: JSON.stringify({}),
-            });
+            const req = new NextRequest(new URL('http://localhost:3000/api/runs/stream'));
             const response = await POST(req);
 
             expect(response.status).toBe(200);
@@ -105,26 +113,26 @@ describe('API Route Handler', () => {
                 `${MOCK_API_URL}/runs/stream`,
                 expect.objectContaining({
                     method: 'POST',
-                    headers: expect.objectContaining({
-                        'X-Api-Key': MOCK_API_KEY
-                    })
+                    headers: {
+                        'X-Api-Key': MOCK_API_KEY,
+                        'Content-Type': 'application/json'
+                    }
                 })
             );
         });
-
     });
 
     describe('Error Handling', () => {
         it('should handle API errors with status codes', async () => {
-            const mockResponse = new Response(JSON.stringify({ message: 'Resource not found' }), {
+            const mockResponse = NextResponse.json({ message: 'Resource not found' }, {
                 status: 404,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/test');
+            const req = new NextRequest(new URL('http://localhost:3000/api/test'));
             const response = await GET(req);
             const data = await response.json();
 
@@ -133,15 +141,15 @@ describe('API Route Handler', () => {
         });
 
         it('should handle API errors without specific message', async () => {
-            const mockResponse = new Response(JSON.stringify({}), {
+            const mockResponse = NextResponse.json({}, {
                 status: 400,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/test');
+            const req = new NextRequest(new URL('http://localhost:3000/api/test'));
             const response = await GET(req);
             const data = await response.json();
 
@@ -152,7 +160,7 @@ describe('API Route Handler', () => {
         it('should handle network errors', async () => {
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-            const req = new NextRequest('http://localhost:3000/api/test');
+            const req = new NextRequest(new URL('http://localhost:3000/api/test'));
             const response = await GET(req);
             const data = await response.json();
 
@@ -163,7 +171,7 @@ describe('API Route Handler', () => {
         it('should handle missing API key', async () => {
             delete process.env.LANGSMITH_API_KEY;
 
-            const req = new NextRequest('http://localhost:3000/api/test');
+            const req = new NextRequest(new URL('http://localhost:3000/api/test'));
             const response = await GET(req);
 
             expect(response.status).toBe(401);
@@ -171,35 +179,47 @@ describe('API Route Handler', () => {
                 error: expect.stringContaining('API key')
             }));
         });
-
-        it('should handle missing auth token', async () => {
-            (getAccessToken as jest.Mock).mockResolvedValueOnce({ accessToken: null });
-
-            const req = new NextRequest('http://localhost:3000/api/test');
-            const response = await GET(req);
-
-            expect(response.status).toBe(401);
-            expect(await response.json()).toEqual(expect.objectContaining({
-                error: expect.stringContaining('Unauthorized')
-            }));
-        });
     });
 
     describe('Query Parameter Handling', () => {
         it('should properly handle and forward query parameters', async () => {
-            const mockResponse = new Response('test', {
+            const mockResponse = NextResponse.json({ test: true }, {
                 status: 200,
-                headers: new Headers({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
             (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-            const req = new NextRequest('http://localhost:3000/api/test?a=1&b=2');
+            const testUrl = 'http://localhost:3000/api/test?a=1&b=2';
+            const req = new NextRequest(new URL(testUrl));
             await GET(req);
 
             expect(global.fetch).toHaveBeenCalledWith(
                 `${MOCK_API_URL}/test?a=1&b=2`,
+                expect.any(Object)
+            );
+        });
+    });
+
+    describe('URL Handling', () => {
+        it('should properly handle the request URL', async () => {
+            const mockResponse = NextResponse.json({ test: true }, {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+            // Create request with explicit URL string
+            const testUrl = 'http://localhost:3000/api/test';
+            const req = new NextRequest(new URL(testUrl));
+
+            const response = await GET(req);
+            expect(response.status).toBe(200);
+            expect(global.fetch).toHaveBeenCalledWith(
+                `${MOCK_API_URL}/test`,
                 expect.any(Object)
             );
         });

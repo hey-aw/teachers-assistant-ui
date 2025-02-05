@@ -10,16 +10,15 @@ const config: Config = {
     testEnvironment: 'jest-environment-jsdom',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
-        '^react$': '<rootDir>/node_modules/react',
-        '^react-dom$': '<rootDir>/node_modules/react-dom'
+        '^lucide-react$': '<rootDir>/node_modules/lucide-react/dist/cjs/lucide-react.js',
     },
-    testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/__tests__/lib/chatApi.test.ts'],
+    testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
     collectCoverage: true,
     coverageDirectory: 'coverage',
-    coveragePathIgnorePatterns: ['/node_modules/', '/.next/'],
     transformIgnorePatterns: [
-        '/node_modules/(?!(@auth0/nextjs-auth0|jose)/)',
+        '/node_modules/(?!(@assistant-ui|lucide-react)/)',
     ],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
 };
 
 export default createJestConfig(config);

@@ -8,8 +8,13 @@ import {
   useLangGraphRuntime,
   useLangGraphSendCommand,
 } from "@assistant-ui/react-langgraph";
+import {
+  CompositeAttachmentAdapter,
+  SimpleImageAttachmentAdapter,
+  SimpleTextAttachmentAdapter,
+} from "@assistant-ui/react";
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { Button } from "./ui/button";
 
 import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
@@ -20,21 +25,23 @@ const MarkdownComponent = makeMarkdownText() as unknown as TextContentPartCompon
 const InterruptUI = () => {
   const interrupt = useLangGraphInterruptState();
   const sendCommand = useLangGraphSendCommand();
+
   if (!interrupt) return null;
 
-  const respondYes = () => {
-    sendCommand({ resume: "yes" });
-  };
-  const respondNo = () => {
-    sendCommand({ resume: "no" });
+  const handleResponse = (response: "yes" | "no") => {
+    sendCommand({ resume: response });
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div>Interrupt: {interrupt.value}</div>
+    <div className="flex flex-col gap-2 p-4 border rounded-lg bg-gray-50">
+      <div className="text-lg font-medium">Interrupt: {interrupt.value}</div>
       <div className="flex items-end gap-2">
-        <Button onClick={respondYes}>Confirm</Button>
-        <Button onClick={respondNo}>Reject</Button>
+        <Button onClick={() => handleResponse("yes")} variant="default">
+          Yes
+        </Button>
+        <Button onClick={() => handleResponse("no")} variant="outline">
+          No
+        </Button>
       </div>
     </div>
   );
@@ -43,6 +50,7 @@ const InterruptUI = () => {
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
   const { user } = useUser();
+
   const runtime = useLangGraphRuntime({
     threadId: threadIdRef.current,
     stream: async (messages, { command }) => {
@@ -54,7 +62,7 @@ export function MyAssistant() {
       return sendMessage({
         threadId,
         messages,
-        command
+        command,
       });
     },
     onSwitchToNewThread: async () => {
@@ -66,14 +74,21 @@ export function MyAssistant() {
       threadIdRef.current = threadId;
       return { messages: (state.values.messages as LangChainMessage[]) ?? [] };
     },
+    adapters: {
+      attachments: new CompositeAttachmentAdapter([
+        new SimpleImageAttachmentAdapter(),
+        new SimpleTextAttachmentAdapter(),
+      ]),
+    },
   });
 
   return (
-    <Thread
-      runtime={runtime}
-      components={{ MessagesFooter: InterruptUI }}
-      assistantMessage={{ components: { Text: MarkdownComponent, ToolFallback } }}
-    />
+    <div className="flex flex-col h-full">
+      <Thread
+        runtime={runtime}
+        components={{ MessagesFooter: InterruptUI }}
+        assistantMessage={{ components: { Text: MarkdownComponent, ToolFallback } }}
+      />
+    </div>
   );
 }
-

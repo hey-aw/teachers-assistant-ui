@@ -1,9 +1,14 @@
 'use client';
 
 import { useUser } from '@auth0/nextjs-auth0/client';
+import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
 import { useEffect, useState } from 'react';
 import { getCookie } from 'cookies-next';
+
+const isPreviewEnvironment = () => {
+  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
+};
 
 export default function Home() {
   const { user: auth0User, error, isLoading } = useUser();
@@ -44,11 +49,13 @@ export default function Home() {
     );
   }
 
+  const loginUrl = isPreviewEnvironment() ? '/mock-login' : '/api/auth/login';
+
   return (
     <main className="h-dvh flex items-center justify-center">
-      <a href="/api/auth/login" className="text-blue-600 hover:text-blue-800 underline">
+      <Link href={loginUrl} className="text-blue-600 hover:text-blue-800 underline">
         Login
-      </a>
+      </Link>
     </main>
   );
 }
