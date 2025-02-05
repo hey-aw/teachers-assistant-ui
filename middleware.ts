@@ -5,7 +5,8 @@ export default withMiddlewareAuthRequired();
 export const config = {
   matcher: [
     // Add routes that require authentication
+    '/',  // Protect the root path
+    '/api/:path*',  // Protect all API routes
     '/protected/:path*',
-    '/api/protected/:path*',
   ],
 }; 
