@@ -3,7 +3,7 @@ import { getMockUser } from './lib/mockAuth';
 import { NextRequest, NextResponse, NextFetchEvent } from 'next/server';
 
 const isPreviewEnvironment = () => {
-  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
+  return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 export function middleware(request: NextRequest, event: NextFetchEvent) {

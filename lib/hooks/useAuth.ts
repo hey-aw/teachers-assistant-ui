@@ -1,42 +1,40 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
 import { getCookie } from 'cookies-next';
+import { getMockUser } from '@/lib/mockAuth';
+import type { MockUser } from '@/lib/mockAuth';
 
 const isPreviewEnvironment = () => {
-  return process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+  return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 };
 
 export function useAuth() {
   const auth0 = useUser();
-  const [mockUser, setMockUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [mockUser, setMockUser] = useState<MockUser | null>(null);
 
   useEffect(() => {
-    const checkMockAuth = async () => {
-      if (!isPreviewEnvironment()) {
-        setLoading(false);
-        return;
-      }
+    if (!isPreviewEnvironment()) return;
 
-      try {
-        const response = await fetch('/api/auth/userinfo');
-        const data = await response.json();
-        setMockUser(data.user);
-      } catch (e) {
-        console.error('Error checking mock auth:', e);
-      } finally {
-        setLoading(false);
+    const checkCookie = () => {
+      const email = getCookie('mockUserEmail') as string;
+      if (email) {
+        const user = getMockUser(email);
+        if (user) setMockUser(user);
+      } else {
+        setMockUser(null);
       }
     };
 
-    checkMockAuth();
+    checkCookie();
+    const interval = setInterval(checkCookie, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (isPreviewEnvironment()) {
     return {
       user: mockUser,
       error: null,
-      isLoading: loading,
+      isLoading: false,
     };
   }
 

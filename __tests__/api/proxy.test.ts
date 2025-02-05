@@ -14,7 +14,7 @@ const MOCK_API_URL = 'https://api.example.com';
 beforeEach(() => {
     process.env.LANGSMITH_API_KEY = MOCK_API_KEY;
     process.env.LANGGRAPH_API_URL = MOCK_API_URL;
-    process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+    process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
 
     // Reset fetch mock
     global.fetch = jest.fn();
@@ -27,7 +27,7 @@ afterEach(() => {
     jest.resetAllMocks();
     delete process.env.LANGSMITH_API_KEY;
     delete process.env.LANGGRAPH_API_URL;
-    delete process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT;
+    delete process.env.NEXT_PUBLIC_MOCK_AUTH;
 });
 
 describe('API Route Handler', () => {
@@ -61,8 +61,7 @@ describe('API Route Handler', () => {
         it('should create a thread correctly', async () => {
             console.log('Test environment variables:', {
                 LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY,
-                LANGGRAPH_API_URL: process.env.LANGGRAPH_API_URL,
-                AZURE_STATIC_WEBAPPS_ENVIRONMENT: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT
+                LANGGRAPH_API_URL: process.env.LANGGRAPH_API_URL
             });
 
             const mockResponse = NextResponse.json({ thread_id: 'test-thread' }, {

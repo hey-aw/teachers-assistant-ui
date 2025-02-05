@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 const isPreviewEnvironment = () => {
-  return process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+  return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 };
 
 export default function RootLayout({

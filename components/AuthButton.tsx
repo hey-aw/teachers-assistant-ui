@@ -8,13 +8,7 @@ import { getCookie } from 'cookies-next';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 const isPreviewEnvironment = () => {
-    const isPreview = process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
-    console.log('Preview environment check:', {
-        AZURE_ENV: process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT,
-        AUTH0_BASE_URL: process.env.NEXT_PUBLIC_AUTH0_BASE_URL,
-        isPreview
-    });
-    return isPreview;
+    return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 export default function AuthButton() {

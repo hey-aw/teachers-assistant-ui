@@ -26,7 +26,7 @@ describe('Middleware', () => {
 
     describe('Preview Environment', () => {
         beforeEach(() => {
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
         });
 
         it('should redirect to mock-login when no cookie present', () => {
@@ -67,8 +67,7 @@ describe('Middleware', () => {
 
     describe('Production Environment', () => {
         beforeEach(() => {
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
-            process.env.AUTH0_BASE_URL = 'https://example.com';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'false';
         });
 
         it('should use Auth0 middleware in production', () => {

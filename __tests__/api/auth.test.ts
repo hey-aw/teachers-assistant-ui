@@ -37,7 +37,7 @@ describe('Auth Routes', () => {
         // Ensure clean environment for each test
         process.env = {
             ...process.env,
-            AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'production',
+            NEXT_PUBLIC_MOCK_AUTH: 'false',
             AUTH0_BASE_URL: 'http://localhost:3000',
             AUTH0_SECRET: 'test-secret',
             AUTH0_ISSUER_BASE_URL: 'https://test.auth0.com',
@@ -48,8 +48,9 @@ describe('Auth Routes', () => {
 
     afterEach(() => {
         // Clean up environment variables
-        ['AZURE_STATIC_WEBAPPS_ENVIRONMENT', 'AUTH0_BASE_URL', 'AUTH0_SECRET',
-            'AUTH0_ISSUER_BASE_URL', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET']
+            ['AUTH0_BASE_URL', 'AUTH0_SECRET',
+            'AUTH0_ISSUER_BASE_URL', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET',
+            'NEXT_PUBLIC_MOCK_AUTH']
             .forEach(key => delete process.env[key]);
     });
 
@@ -91,7 +92,7 @@ describe('Auth Routes', () => {
 
         it('should clear auth state on logout', async () => {
             // Set preview mode for mock auth
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
             delete process.env.AUTH0_BASE_URL;
 
             const request = mockRequest('logout', {
@@ -191,7 +192,7 @@ describe('Auth Routes', () => {
 
         it('should handle race conditions in preview mode', async () => {
             // Set preview environment
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
             delete process.env.AUTH0_BASE_URL;
 
             const mockEmail = 'test@example.com';

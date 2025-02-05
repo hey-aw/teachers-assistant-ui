@@ -3,14 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMockUser } from '@/lib/mockAuth';
 
 const isPreviewEnvironment = () => {
-    const isPreview = process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
-    console.log('[Auth] Environment check:', {
-        AZURE_STATIC_WEBAPPS_ENVIRONMENT: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT,
-        AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,
-        isPreview,
-        timestamp: new Date().toISOString()
-    });
-    return isPreview;
+   return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 export const GET = async (req: NextRequest) => {
@@ -25,7 +18,7 @@ export const GET = async (req: NextRequest) => {
         cookies: Object.fromEntries(req.cookies.getAll().map(c => [c.name, c.value])),
         isPreview: isPreviewEnvironment(),
         env: {
-            AZURE_ENV: process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT,
+            NEXT_PUBLIC_MOCK_AUTH: process.env.NEXT_PUBLIC_MOCK_AUTH,
             AUTH0_BASE_URL: process.env.AUTH0_BASE_URL
         },
         timestamp: new Date().toISOString()

@@ -4,7 +4,7 @@ import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 export const runtime = "edge";
 
 function isPreviewEnvironment() {
-  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
+  return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 function getApiKey() {

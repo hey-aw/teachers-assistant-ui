@@ -29,8 +29,7 @@ describe('useAuth', () => {
 
     describe('Preview Environment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
-            delete process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
         });
 
         it('should return mock user when cookie exists', () => {
@@ -78,8 +77,7 @@ describe('useAuth', () => {
 
     describe('Production Environment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
-            delete process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT;
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'false';
         });
 
         it('should return Auth0 user state', () => {

@@ -44,98 +44,63 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Environments
+
+The application supports two environments:
+
+### Preview Environment
+
+The preview environment is activated when:
+
+- `NEXT_PUBLIC_MOCK_AUTH` is set to 'true'
+
+In the preview environment:
+
+- Authentication uses a mock login system
+- Users can log in with any email address
+- No actual Auth0 integration is required
+- Useful for development and testing
+
+
+### Production Environment
+
+The production environment is active when:
+
+- `NEXT_PUBLIC_MOCK_AUTH` is set to 'false' or not set
+In the production environment:
+
+- Full Auth0 authentication is enabled
+- Requires proper Auth0 configuration
+- Secure authentication flow is enforced
+- Used for staging and production deployments
+
+### Environment Variables
+
+For authentication setup:
+
+```
+# Production Auth0 Configuration (server-side)
+AUTH0_SECRET=your_auth0_secret                  # Required in production - used to encrypt cookies
+AUTH0_ISSUER_BASE_URL=your_auth0_issuer_url    # Required in production - your Auth0 domain
+AUTH0_CLIENT_ID=your_auth0_client_id           # Required in production - your Auth0 application client ID
+AUTH0_CLIENT_SECRET=your_auth0_client_secret   # Required in production - your Auth0 application client secret
+
+# Note: AUTH0_BASE_URL is automatically set in deployments to the Azure Static Web Apps URL:
+# - PR deployments: https://<preview-url>.azurestaticapps.net
+# - Production: https://<app-name>.azurestaticapps.net
+
+# Preview Environment Configuration
+NEXT_PUBLIC_MOCK_AUTH=true                           # Set to 'true' to enable mock authentication regardless of environment
+```
+
+For local development:
+
+- Set `NEXT_PUBLIC_MOCK_AUTH=true` in your `.env.local`
+- Preview mode will be enabled, allowing mock authentication
+- To enable production mode locally:
+  1. Set up an Auth0 application in your Auth0 dashboard
+  2. Set `AUTH0_BASE_URL=http://localhost:3000` in your `.env.local`
+  3. Set all other required Auth0 environment variables
+  4. Set `NEXT_PUBLIC_MOCK_AUTH=false` in your `.env.local`
+
 ## Note
-
-Ensure `pnpm` is installed before running any commands. You can install it globally using the following command:
-
-```bash
-npm install -g pnpm
-```
-
-## Testing
-
-This project uses a comprehensive testing strategy to ensure code quality and reliability. Here's an overview of our testing approach:
-
-### Test Structure
-
-Tests are organized under the `__tests__` directory, mirroring the main codebase structure:
-
-- `/components` - React component tests
-- `/api` - API route tests
-- `/app` - Next.js app router tests
-- `/lib` - Utility function tests
-- `/pages` - Page component tests
-
-### Testing Stack
-
-- **Framework**: Jest
-- **Component Testing**: React Testing Library
-- **API Testing**: Jest mocking capabilities
-- **Authentication**: Mock Auth0 integration
-- **Internationalization**: i18next integration
-
-### Running Tests
-
-```bash
-# Run all tests
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Run tests with coverage
-pnpm test:coverage
-```
-
-### Key Testing Practices
-
-1. **Component Testing**
-
-   - User-centric testing with React Testing Library
-   - Testing both success and error states
-   - Async testing for streaming and API interactions
-   - Comprehensive mocking of external dependencies
-
-2. **API Testing**
-
-   - Mock HTTP requests
-   - Environment-aware testing (preview vs production)
-   - Authentication flow testing
-   - Middleware testing
-
-3. **Authentication Testing**
-
-   - Mock Auth0 integration
-   - Environment-specific testing
-   - Protected route validation
-   - Mock user scenarios for development
-
-4. **Best Practices**
-   - Test isolation
-   - Error state coverage
-   - Async operation testing
-   - Proper mocking strategies
-   - Environment variable management
-
-### Writing Tests
-
-When adding new features, ensure:
-
-1. Tests are added in the corresponding `__tests__` directory
-2. Both success and error cases are covered
-3. External dependencies are properly mocked
-4. Tests follow the existing patterns in similar test files
-
-For component testing example:
-
-```typescript
-import { render, screen } from '@testing-library/react';
-import YourComponent from './YourComponent';
-
-describe('YourComponent', () => {
-  it('renders successfully', () => {
-    render(<YourComponent />);
-    expect(screen.getByRole('main')).toBeInTheDocument();
-  });
-});
-```

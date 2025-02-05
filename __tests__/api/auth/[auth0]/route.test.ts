@@ -12,7 +12,7 @@ describe.skip('Auth Route Handler', () => {
 
     describe('Preview Environment', () => {
         beforeEach(() => {
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'true';
         });
 
         describe('Performance', () => {
@@ -131,7 +131,7 @@ describe.skip('Auth Route Handler', () => {
                 expect(consoleLog).toHaveBeenCalledWith(
                     '[Auth] Environment check:',
                     expect.objectContaining({
-                        AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'preview',
+                        NEXT_PUBLIC_MOCK_AUTH: 'true',
                         AUTH0_BASE_URL: expect.any(String),
                         isPreview: true,
                         timestamp: expect.any(String)
@@ -218,7 +218,7 @@ describe.skip('Auth Route Handler', () => {
 
     describe('Production Environment', () => {
         beforeEach(() => {
-            process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+            process.env.NEXT_PUBLIC_MOCK_AUTH = 'false';
             process.env.AUTH0_BASE_URL = 'https://example.com';
         });
 
