@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMockUser } from '@/lib/mockAuth';
 
 const isPreviewEnvironment = () => {
-   return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
+    return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 export const GET = async (req: NextRequest) => {
@@ -33,7 +33,7 @@ export const GET = async (req: NextRequest) => {
     if (isPreview) {
         const url = req.nextUrl;
         // If this is the /me or /userinfo endpoint
-        if (url.pathname === '/api/auth/me' || url.pathname === '/api/auth/userinfo') {
+        if (url.pathname === '/api/auth/me' || url.pathname === '/api/auth/me') {
             const mockEmail = req.cookies.get('mockEmail')?.value;
             console.log(`[Auth ${requestId}] Mock auth debug:`, {
                 pathname: url.pathname,

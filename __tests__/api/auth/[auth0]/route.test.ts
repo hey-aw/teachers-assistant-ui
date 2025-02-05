@@ -17,7 +17,7 @@ describe.skip('Auth Route Handler', () => {
 
         describe('Performance', () => {
             it('should respond quickly without auth', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 const start = Date.now();
                 await GET(request);
                 const duration = Date.now() - start;
@@ -25,7 +25,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should respond reasonably fast with auth', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 const cookies = new Map([['mockEmail', 'aw@eddolearning.com']]);
                 Object.defineProperty(request, 'cookies', {
                     get: () => cookies
@@ -41,7 +41,7 @@ describe.skip('Auth Route Handler', () => {
 
         describe('Header Handling', () => {
             it('should handle browser headers', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 request.headers.set('accept', '*/*');
                 request.headers.set('accept-encoding', 'gzip, deflate, br, zstd');
                 request.headers.set('accept-language', 'en-US,en;q=0.5');
@@ -58,7 +58,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should handle curl headers', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 request.headers.set('accept', 'application/json');
                 request.headers.set('user-agent', 'curl/8.7.1');
                 request.headers.set('host', 'localhost:3000');
@@ -70,7 +70,7 @@ describe.skip('Auth Route Handler', () => {
 
         describe('Cookie Handling', () => {
             it('should handle multiple cookies', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 const cookies = {
                     getAll: () => [
                         { name: 'wp-settings-time-1', value: '1737998052' },
@@ -93,7 +93,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should handle URL encoded email addresses', async () => {
-                const request = new NextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new NextRequest('http://localhost:3000/api/auth/me');
                 const cookies = {
                     getAll: () => [{ name: 'mockEmail', value: 'aw%40eddolearning.com' }],
                     get: (name: string) => cookies.getAll().find(c => c.name === name)?.value
@@ -125,7 +125,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should log environment checks', async () => {
-                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new MockNextRequest('http://localhost:3000/api/auth/me');
                 await GET(request as unknown as NextRequest);
 
                 expect(consoleLog).toHaveBeenCalledWith(
@@ -140,7 +140,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should log debug info for authenticated requests', async () => {
-                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new MockNextRequest('http://localhost:3000/api/auth/me');
                 request.cookies.set('mockEmail', 'aw@eddolearning.com');
 
                 const mockUser = { email: 'aw@eddolearning.com', email_verified: true, name: 'AW' };
@@ -151,7 +151,7 @@ describe.skip('Auth Route Handler', () => {
                 expect(consoleLog).toHaveBeenCalledWith(
                     expect.stringMatching(/\[Auth .*\] Mock auth debug:/),
                     expect.objectContaining({
-                        pathname: '/api/auth/userinfo',
+                        pathname: '/api/auth/me',
                         mockEmail: 'aw@eddolearning.com',
                         hasEmailCookie: true,
                         cookieValue: expect.any(Object),
@@ -190,7 +190,7 @@ describe.skip('Auth Route Handler', () => {
 
         describe('/userinfo endpoint', () => {
             it('should return user info from cookie', async () => {
-                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new MockNextRequest('http://localhost:3000/api/auth/me');
                 request.cookies.set('mockEmail', 'test@example.com');
 
                 const mockUser = { name: 'Test User', email: 'test@example.com' };
@@ -205,7 +205,7 @@ describe.skip('Auth Route Handler', () => {
             });
 
             it('should return null when no cookie is set', async () => {
-                const request = new MockNextRequest('http://localhost:3000/api/auth/userinfo');
+                const request = new MockNextRequest('http://localhost:3000/api/auth/me');
 
                 const response = await GET(request as unknown as NextRequest);
                 const data = await response.json();

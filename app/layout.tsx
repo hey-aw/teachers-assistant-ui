@@ -34,7 +34,7 @@ export default function RootLayout({
         <I18nextProvider i18n={i18n}>
           <UserProvider
             loginUrl="/mock-login"
-            profileUrl="/api/auth/userinfo"
+            profileUrl="/api/auth/me"
           >
             <Navbar />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
