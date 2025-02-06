@@ -83,7 +83,7 @@ export function MyAssistant() {
   });
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-full">
       <Thread
         runtime={runtime}
         components={{ MessagesFooter: InterruptUI }}

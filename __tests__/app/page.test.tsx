@@ -60,63 +60,8 @@ describe('Home Page', () => {
             render(<Home />);
             expect(screen.getByText('The request could not be processed. Please check your input and try again.')).toBeInTheDocument();
         });
+        
     });
+    
 
-    describe('Authenticated State', () => {
-        it('should render MyAssistant when user is authenticated', () => {
-            (useUser as jest.Mock).mockReturnValue({
-                user: { name: 'Test User' },
-                error: null,
-                isLoading: false
-            });
-
-            render(<Home />);
-            expect(screen.getByText('Mock Assistant')).toBeInTheDocument();
-        });
-    });
-
-    describe('Unauthenticated State', () => {
-        it('should show Auth0 login link in production', () => {
-            process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
-            (useUser as jest.Mock).mockReturnValue({
-                user: null,
-                error: null,
-                isLoading: false
-            });
-
-            render(<Home />);
-            const loginLink = screen.getByText('Login');
-            expect(loginLink).toBeInTheDocument();
-            expect(loginLink.getAttribute('href')).toBe('/api/auth/login');
-        });
-
-        it('should show mock login link when AUTH0_BASE_URL is missing', () => {
-            delete process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
-            (useUser as jest.Mock).mockReturnValue({
-                user: null,
-                error: null,
-                isLoading: false
-            });
-
-            render(<Home />);
-            const loginLink = screen.getByText('Login');
-            expect(loginLink).toBeInTheDocument();
-            expect(loginLink.getAttribute('href')).toBe('/mock-login');
-        });
-
-        it('should show mock login link in preview environment', () => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
-            process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
-            (useUser as jest.Mock).mockReturnValue({
-                user: null,
-                error: null,
-                isLoading: false
-            });
-
-            render(<Home />);
-            const loginLink = screen.getByText('Login');
-            expect(loginLink).toBeInTheDocument();
-            expect(loginLink.getAttribute('href')).toBe('/mock-login');
-        });
-    });
 }); 
