@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
 import { MyAssistant } from '@/components/MyAssistant';
 import { createThread, sendMessage } from '@/lib/chatApi';
 import type { LangChainMessage } from '@assistant-ui/react-langgraph';
 import React from 'react';
-import { useLangGraphRuntime } from '@assistant-ui/react-langgraph';
+import { useLangGraphRuntime, useLangGraphInterruptState, useLangGraphSendCommand } from '@assistant-ui/react-langgraph';
 
 // Mock all external UI components
 jest.mock('@assistant-ui/react', () => ({
@@ -239,4 +239,46 @@ describe('MyAssistant', () => {
             expect(screen.getByRole('complementary')).toHaveAttribute('data-error', 'true');
         });
     });
-}); 
+
+    describe('InterruptUI', () => {
+        it('renders InterruptUI when there is an interrupt', () => {
+            (useLangGraphInterruptState as jest.Mock).mockReturnValue({
+                value: 'Please authorize',
+            });
+
+            render(<MyAssistant />);
+
+            expect(screen.getByText('Interrupt: Please authorize')).toBeInTheDocument();
+        });
+
+        it('calls sendCommand with "yes" when Confirm button is clicked', () => {
+            const sendCommandMock = jest.fn();
+            (useLangGraphInterruptState as jest.Mock).mockReturnValue({
+                value: 'Please authorize',
+            });
+            (useLangGraphSendCommand as jest.Mock).mockReturnValue(sendCommandMock);
+
+            render(<MyAssistant />);
+
+            const confirmButton = screen.getByText('Yes');
+            fireEvent.click(confirmButton);
+
+            expect(sendCommandMock).toHaveBeenCalledWith({ resume: 'yes' });
+        });
+
+        it('calls sendCommand with "no" when Reject button is clicked', () => {
+            const sendCommandMock = jest.fn();
+            (useLangGraphInterruptState as jest.Mock).mockReturnValue({
+                value: 'Please authorize',
+            });
+            (useLangGraphSendCommand as jest.Mock).mockReturnValue(sendCommandMock);
+
+            render(<MyAssistant />);
+
+            const rejectButton = screen.getByText('No');
+            fireEvent.click(rejectButton);
+
+            expect(sendCommandMock).toHaveBeenCalledWith({ resume: 'no' });
+        });
+    });
+});
