@@ -32,13 +32,11 @@ function buildApiUrl(baseUrl: string, path: string, queryString: string) {
 
     const cleanBaseUrl = baseUrl.replace(/\/$/, "");
     const cleanPath = path.replace(/^\//, "");
-    console.log('Cleaned URLs:', { cleanBaseUrl, cleanPath });
 
     const url = new URL(`${cleanBaseUrl}/${cleanPath}`);
     if (queryString) {
       url.search = queryString;
     }
-    console.log('Final URL:', url.toString());
     return url.toString();
   } catch (e) {
     console.error('buildApiUrl error:', e);
@@ -101,7 +99,6 @@ async function handleRequest(req: NextRequest, method: string) {
     console.log('Query string:', queryString);
 
     const apiUrl = buildApiUrl(baseUrl, path, queryString);
-    console.log('Final API URL:', apiUrl);
 
     const options: RequestInit = {
       method,
@@ -183,9 +180,6 @@ async function handleRequest(req: NextRequest, method: string) {
     }
 
     // For successful responses, pass through the response as-is
-    console.log('Creating success response');
-    console.log('Final response data:', responseBody);
-
     return NextResponse.json(
       responseBody,
       {

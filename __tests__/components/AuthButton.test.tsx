@@ -137,7 +137,7 @@ describe('AuthButton', () => {
             rerender(<AuthButton />);
             const loginButton = screen.getByText('login');
             expect(loginButton).toBeInTheDocument();
-            expect(loginButton.getAttribute('href')).toBe('/mock-login');
+            expect(loginButton.getAttribute('href')).toBe('/api/auth/login');
         });
     });
 
@@ -202,7 +202,7 @@ describe('AuthButton', () => {
             expect(screen.getByAltText('User avatar')).toBeInTheDocument();
             const logoutButton = screen.getByText('logout');
             expect(logoutButton).toBeInTheDocument();
-            expect(logoutButton.getAttribute('href')).toBe('/');
+            expect(logoutButton.getAttribute('href')).toBe('/api/auth/logout');
         });
 
         it('should use name if nickname is not available', () => {
@@ -226,32 +226,13 @@ describe('AuthButton', () => {
             });
         });
 
-        it('should show Auth0 login link in production', () => {
+        it('should show Auth0 login link', () => {
             process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
             render(<AuthButton />);
 
             const loginButton = screen.getByText('login');
             expect(loginButton).toBeInTheDocument();
             expect(loginButton.getAttribute('href')).toBe('/api/auth/login');
-        });
-
-        it('should show mock login link when AUTH0_BASE_URL is missing', () => {
-            delete process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
-            render(<AuthButton />);
-
-            const loginButton = screen.getByText('login');
-            expect(loginButton).toBeInTheDocument();
-            expect(loginButton.getAttribute('href')).toBe('/mock-login');
-        });
-
-        it('should show mock login link in preview environment', () => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
-            process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
-            render(<AuthButton />);
-
-            const loginButton = screen.getByText('login');
-            expect(loginButton).toBeInTheDocument();
-            expect(loginButton.getAttribute('href')).toBe('/mock-login');
         });
     });
 }); 

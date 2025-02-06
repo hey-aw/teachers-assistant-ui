@@ -3,60 +3,34 @@
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getCookie } from 'cookies-next';
-import { useAuth } from '@/lib/hooks/useAuth';
-
-const isPreviewEnvironment = () => {
-    const isPreview = process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
-    console.log('Preview environment check:', {
-        AZURE_ENV: process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT,
-        AUTH0_BASE_URL: process.env.NEXT_PUBLIC_AUTH0_BASE_URL,
-        isPreview
-    });
-    return isPreview;
-}
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function AuthButton() {
-    const { user, error, isLoading } = useAuth();
+    const { user, error, isLoading } = useUser();
     const { t } = useTranslation();
-    const [isPreview, setIsPreview] = useState(false);
 
-    useEffect(() => {
-        setIsPreview(isPreviewEnvironment());
-    }, []);
-
-    // Debug user state on every render
-    console.log('Auth State:', {
-        user,
-        error,
-        isLoading,
-        isPreview,
-        welcomeMessage: user ? t('welcome_user', { name: user.nickname || user.name }) : null,
-        mockEmailCookie: getCookie('mockEmail')
-    });
-
-    if (isLoading) return <div>{t('loading')}</div>;
-    if (error) return <div>{t('error', { message: error.message })}</div>;
+    if (isLoading) return <div className="animate-pulse text-gray-500">{t('loading')}</div>;
+    if (error) return <div className="text-red-500">{t('error', { message: error.message })}</div>;
 
     if (user) {
         return (
             <div className="flex items-center gap-4">
-                <span className="block">{t('welcome_user', { name: user.nickname || user.name })}</span>
+                <span className="block font-medium text-gray-700">{t('welcome_user', { name: user.nickname || user.name })}</span>
                 {user.picture && (
-                    <Link href="/profile" className="hover:opacity-80 transition-opacity">
+                    <Link href="/profile" className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-0 group-hover:opacity-100 transition duration-200"></div>
                         <Image
                             src={user.picture}
                             alt={'User avatar'}
                             width={32}
                             height={32}
-                            className="w-8 h-8 rounded-full"
+                            className="relative w-8 h-8 rounded-full object-cover ring-2 ring-white"
                         />
                     </Link>
                 )}
                 <a
-                    href={isPreview ? "/" : "/api/auth/logout"}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
+                    href="/api/auth/logout"
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-500 hover:to-red-600 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                 >
                     {t('logout')}
                 </a>
@@ -64,13 +38,13 @@ export default function AuthButton() {
         );
     }
 
-    const loginUrl = isPreviewEnvironment() ? "/mock-login" : "/api/auth/login";
+    const loginUrl =  "/api/auth/login";
     console.log('[AuthButton] Login URL:', loginUrl);
 
     return (
         <a
-            href={isPreview ? "/mock-login" : "/api/auth/login"}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500"
+            href={loginUrl}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
         >
             {t('login')}
         </a>

@@ -72,18 +72,22 @@ export const sendMessage = async (params: {
   threadId: string;
   messages: LangChainMessage[];
   command?: LangGraphCommand | undefined;
+  user?: { email?: string; email_verified?: boolean };
 }) => {
   const client = createClient();
+
+  // User ID is the email address of the user if it exists and is verified
+  const userId = params.user?.email && params.user?.email_verified ? params.user.email : undefined;
+  console.log('[sendMessage] User details:', {
+    hasUser: !!params.user,
+    email: params.user?.email,
+    emailVerified: params.user?.email_verified,
+    finalUserId: userId
+  });
 
   const input = params.messages.length
     ? { messages: params.messages }
     : undefined;
-
-  const config = {
-    configurable: {
-      model_name: "openai",
-    }
-  };
 
   try {
     return await client.runs.stream(
@@ -92,7 +96,12 @@ export const sendMessage = async (params: {
       {
         input,
         ...(params.command && { command: params.command }),
-        config,
+        config: {
+          configurable: {
+            user_id: userId,
+            thread_id: params.threadId
+          }
+        },
         streamMode: ["updates", "messages"],
       },
     );

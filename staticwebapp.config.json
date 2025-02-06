@@ -8,6 +8,16 @@
             ]
         },
         {
+            "route": "/api/auth/*",
+            "allowedRoles": [
+                "anonymous"
+            ],
+            "methods": [
+                "GET",
+                "POST"
+            ]
+        },
+        {
             "route": "/api/*",
             "methods": [
                 "GET",

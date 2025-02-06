@@ -63,6 +63,10 @@ export function MyAssistant() {
         threadId,
         messages,
         command,
+        user: user ? {
+          email: user.email || undefined,
+          email_verified: user.email_verified || undefined
+        } : undefined
       });
     },
     onSwitchToNewThread: async () => {
@@ -83,7 +87,7 @@ export function MyAssistant() {
   });
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-full">
       <Thread
         runtime={runtime}
         components={{ MessagesFooter: InterruptUI }}
