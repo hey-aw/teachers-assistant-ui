@@ -38,7 +38,7 @@ export default function AuthButton() {
         );
     }
 
-    const loginUrl = isPreviewEnvironment() ? "/mock-login" : "/api/auth/login";
+    const loginUrl =  "/api/auth/login";
     console.log('[AuthButton] Login URL:', loginUrl);
 
     return (

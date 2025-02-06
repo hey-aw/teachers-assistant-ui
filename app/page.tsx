@@ -37,8 +37,6 @@ export default function Home() {
     );
   }
 
-  const user = isPreviewEnvironment() ? mockUser : auth0User;
-
   if (user) {
     return (
       <main className="h-dvh w-full bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
