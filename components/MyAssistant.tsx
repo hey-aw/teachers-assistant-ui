@@ -64,8 +64,8 @@ export function MyAssistant() {
         messages,
         command,
         user: user ? {
-          email: user.email,
-          email_verified: user.email_verified
+          email: user.email || undefined,
+          email_verified: user.email_verified || undefined
         } : undefined
       });
     },
