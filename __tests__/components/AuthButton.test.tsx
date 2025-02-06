@@ -234,5 +234,12 @@ describe('AuthButton', () => {
             expect(loginButton).toBeInTheDocument();
             expect(loginButton.getAttribute('href')).toBe('/api/auth/login');
         });
+
+        it('should have the correct href attribute for the login button', () => {
+            render(<AuthButton />);
+            const loginButton = screen.getByText('login');
+            expect(loginButton).toBeInTheDocument();
+            expect(loginButton.getAttribute('href')).toBe('/api/auth/login');
+        });
     });
-}); 
+});
