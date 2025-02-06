@@ -130,3 +130,12 @@ export const authorize = async (state: any, config: any) => {
   }
   return { messages: [] };
 };
+
+export const sendCommand = async (command: any) => {
+  const client = createClient();
+  try {
+    return await client.commands.send(command);
+  } catch (error) {
+    throw new ChatApiError('Failed to send command', error);
+  }
+};
