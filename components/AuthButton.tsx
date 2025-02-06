@@ -43,7 +43,7 @@ export default function AuthButton() {
 
     return (
         <a
-            href="/api/auth/login"
+            href={loginUrl}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
         >
             {t('login')}

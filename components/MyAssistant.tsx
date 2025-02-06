@@ -63,6 +63,10 @@ export function MyAssistant() {
         threadId,
         messages,
         command,
+        user: user ? {
+          email: user.email,
+          email_verified: user.email_verified
+        } : undefined
       });
     },
     onSwitchToNewThread: async () => {
