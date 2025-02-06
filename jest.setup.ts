@@ -28,7 +28,7 @@ i18next
 process.env = {
   ...process.env,
   AUTH0_SECRET: 'test-secret',
-  AUTH0_BASE_URL: 'http://localhost:3000',
+  AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,
   AUTH0_ISSUER_BASE_URL: 'https://test.auth0.com',
   AUTH0_CLIENT_ID: 'test-client-id',
   AUTH0_CLIENT_SECRET: 'test-client-secret',
@@ -179,7 +179,7 @@ process.env = {
   LANGGRAPH_API_URL: 'https://api.example.com',
   LANGSMITH_API_KEY: 'test-api-key',
   AUTH0_SECRET: 'test-secret',
-  AUTH0_BASE_URL: 'http://localhost:3000',
+  AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,
   AUTH0_ISSUER_BASE_URL: 'https://test.auth0.com',
   AUTH0_CLIENT_ID: 'test-client-id',
   AUTH0_CLIENT_SECRET: 'test-client-secret',
