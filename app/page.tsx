@@ -3,8 +3,6 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
-import { useEffect, useState } from 'react';
-import { getCookie } from 'cookies-next';
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
@@ -21,10 +19,7 @@ export default function Home() {
   );
 
   if (error) {
-    let errorMessage = error.message;
-    if (error.message.includes('Unprocessable Entity')) {
-      errorMessage = 'The request could not be processed. Please check your input and try again.';
-    }
+    console.error('Auth error:', error);
     return (
       <main className="h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
         <div className="absolute inset-0">
@@ -32,7 +27,13 @@ export default function Home() {
           <div className="absolute -top-[200px] -right-[400px] w-[1200px] h-[1200px] bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000 opacity-30"></div>
           <div className="absolute -bottom-[400px] left-1/4 w-[1200px] h-[1200px] bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000 opacity-30"></div>
         </div>
-        <div className="relative z-10">{errorMessage}</div>
+        <div className="relative z-10 text-center space-y-4">
+          <div className="text-red-600">Authentication error occurred</div>
+          <Link href="/api/auth/login"
+            className="inline-block px-6 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">
+            Try logging in again
+          </Link>
+        </div>
       </main>
     );
   }
