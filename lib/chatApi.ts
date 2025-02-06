@@ -111,3 +111,22 @@ export const sendMessage = async (params: {
     throw new ChatApiError(errorMessage, error);
   }
 };
+
+export const authorize = async (state: any, config: any) => {
+  const user_id = config["configurable"].get("user_id");
+  for (const tool_call of state["messages"].slice(-1)[0].tool_calls) {
+    const tool_name = tool_call["name"];
+    if (!tool_manager.requires_auth(tool_name)) {
+      continue;
+    }
+    const auth_response = tool_manager.authorize(tool_name, user_id);
+    if (auth_response.status !== "completed") {
+      console.log(`Visit the following URL to authorize: ${auth_response.url}`);
+      tool_manager.wait_for_auth(auth_response.id);
+      if (!tool_manager.is_authorized(auth_response.id)) {
+        throw new Error("Authorization failed");
+      }
+    }
+  }
+  return { messages: [] };
+};
