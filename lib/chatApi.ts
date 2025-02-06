@@ -115,7 +115,7 @@ export const sendMessage = async (params: {
 export const sendCommand = async (command: any) => {
   const client = createClient();
   try {
-    return await client.commands.send(command);
+    return await client.runs.sendCommand(command);
   } catch (error) {
     throw new ChatApiError('Failed to send command', error);
   }
