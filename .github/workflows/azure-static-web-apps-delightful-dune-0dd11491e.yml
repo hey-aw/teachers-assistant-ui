@@ -21,12 +21,6 @@ jobs:
         with:
           submodules: true
           lfs: false
-      - name: Set PR Environment Variables
-        run: |
-          echo "PR_ENV_NAME=teachers-eddo-ai-pr-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-          echo "DEPLOY_URL=https://${PR_ENV_NAME}.azurecontainerapps.io" >> $GITHUB_ENV
-          echo "AUTH0_BASE_URL=https://${PR_ENV_NAME}.azurecontainerapps.io" >> $GITHUB_ENV  # Set AUTH0_BASE_URL
-          echo "AUTH0_SCOPE='openid profile email email_verified'" >> $GITHUB_ENV # Set AUTH0_SCOPE
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
