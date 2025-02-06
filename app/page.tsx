@@ -3,8 +3,6 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
-import { useEffect, useState } from 'react';
-import { getCookie } from 'cookies-next';
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
