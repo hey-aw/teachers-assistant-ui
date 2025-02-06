@@ -23,6 +23,16 @@
             "allowedRoles": [
                 "authenticated"
             ]
+        },
+        {
+            "route": "/api/auth/*",
+            "allowedRoles": [
+                "anonymous"
+            ],
+            "methods": [
+                "GET",
+                "POST"
+            ]
         }
     ],
     "navigationFallback": {
