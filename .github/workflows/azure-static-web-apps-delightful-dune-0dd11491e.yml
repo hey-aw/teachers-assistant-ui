@@ -19,12 +19,12 @@ jobs:
       pull-requests: write
       contents: read
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
       - name: Build And Deploy
-        id: builddeploy
+        id: swa
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_DUNE_0DD11491E }}
@@ -32,9 +32,14 @@ jobs:
           action: 'upload'
           app_location: '/'
           api_location: ''
-          output_location: ''
+          production_branch: 'main'
+        env:
+          NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW: ${{ github.event_name == 'pull_request' }}
+          AUTH0_BASE_URL: ${{ github.event_name == 'pull_request' && format('https://delightful-dune-0dd11491e-{0}.westus2.4.azurestaticapps.net', github.event.pull_request.number) || '' }}
       - name: Comment on Pull Request with Deployment URL
+
         if: github.event_name == 'pull_request'
+
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

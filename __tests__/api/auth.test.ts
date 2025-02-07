@@ -219,4 +219,33 @@ describe('Auth Routes', () => {
             });
         });
     });
+
+    // Add new test for Azure Static Web Apps deployment
+    describe('Azure Static Web Apps Deployment', () => {
+        it('should verify correct deployment on Azure Static Web Apps', async () => {
+            const mockUser = {
+                sub: 'auth0|123',
+                name: 'Test User',
+                email: 'test@example.com'
+            };
+
+            const mockResponse = NextResponse.json({ user: mockUser }, {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            mockHandleAuth.mockResolvedValue(mockResponse);
+            (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
+
+            const request = mockRequest('me');
+            const { GET } = require('@/app/api/auth/[auth0]/route');
+            const response = await GET(request);
+
+            expect(response.headers.get('Content-Type')).toBe('application/json');
+            const data = await response.json();
+            expect(data).toEqual({ user: mockUser });
+
+            // Verify correct deployment on Azure Static Web Apps
+            expect(process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        });
+    });
 });

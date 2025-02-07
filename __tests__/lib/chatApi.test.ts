@@ -133,7 +133,8 @@ describe('chatApi', () => {
           command: params.command,
           config: {
             configurable: {
-              model_name: 'openai',
+              thread_id: 'mock-thread-id',
+              user_id: undefined,
             },
           },
           streamMode: ['updates', 'messages'],
@@ -155,7 +156,8 @@ describe('chatApi', () => {
           input: undefined,
           config: {
             configurable: {
-              model_name: 'openai',
+              thread_id: 'mock-thread-id',
+              user_id: undefined,
             },
           },
           streamMode: ['updates', 'messages'],
