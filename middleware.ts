@@ -1,8 +1,9 @@
 import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextFetchEvent } from 'next/server';
 
-async function middleware(request: NextRequest) {
+// Base middleware function for handling CORS and API keys
+async function handleCorsAndApiKey(request: NextRequest) {
   // Handle preflight requests
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 200 });
@@ -11,7 +12,7 @@ async function middleware(request: NextRequest) {
     response.headers.set('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
     response.headers.set(
       'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
     );
     return response;
   }
@@ -24,17 +25,51 @@ async function middleware(request: NextRequest) {
   response.headers.set('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT');
   response.headers.set(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
+
+  // Add API key for LangGraph endpoints
+  const path = request.nextUrl.pathname;
+  if (path.includes('/threads') || path.includes('/stream')) {
+    const apiKey = process.env.LANGGRAPH_API_KEY;
+    if (apiKey) {
+      request.headers.set('Authorization', `Bearer ${apiKey}`);
+    }
+  }
 
   return response;
 }
 
-export default withMiddlewareAuthRequired(middleware);
+// Main middleware function
+async function middleware(request: NextRequest, event: NextFetchEvent) {
+  const path = request.nextUrl.pathname;
+
+  // For LangGraph API routes (need API key but not auth)
+  if (path.includes('/threads') || path.includes('/stream')) {
+    return handleCorsAndApiKey(request);
+  }
+
+  // For protected routes that need Auth0 auth
+  if (path.startsWith('/protected')) {
+    const handler = withMiddlewareAuthRequired();
+    return handler(request, event);
+  }
+
+  // For other API routes that just need CORS
+  if (path.startsWith('/api')) {
+    return handleCorsAndApiKey(request);
+  }
+
+  return NextResponse.next();
+}
+
+export default middleware;
 
 export const config = {
   matcher: [
     '/api/:path*',
-    '/protected/:path*'
+    '/protected/:path*',
+    '/threads/:path*',
+    '/stream/:path*'
   ],
 };

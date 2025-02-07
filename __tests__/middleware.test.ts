@@ -29,27 +29,25 @@ describe('Middleware', () => {
             process.env.AUTH0_BASE_URL = 'https://example.com';
         });
 
-        it('should use Auth0 middleware in production', () => {
+        it('should use Auth0 middleware in production', async () => {
             const request = new NextRequest(new URL('http://localhost/protected/test'));
-            const response = middleware(request, mockEvent);
-
+            const response = await middleware(request);
             expect(response).toBe(mockAuth0Response);
             expect((response as NextResponse).status).toBe(200);
         });
     });
 
-    describe('Azure Static Web Apps Deployment', () => {
+    describe('Azure Static Web Apps Preview Deployment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'false';
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'true';
         });
 
-        it('should verify correct deployment on Azure Static Web Apps', () => {
+        it('should have correct deployment for Azure Static Web Apps', async () => {
             const request = new NextRequest(new URL('http://localhost/protected/test'));
-            const response = middleware(request, mockEvent);
-
+            const response = await middleware(request);
             expect(response).toBe(mockAuth0Response);
             expect((response as NextResponse).status).toBe(200);
-            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('false');
+            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('true');
         });
     });
 });
