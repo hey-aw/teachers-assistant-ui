@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useEffect, useState } from 'react';
 
 export default function Home() {
   const { user, error, isLoading } = useAuth();
