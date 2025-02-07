@@ -34,10 +34,12 @@ jobs:
           api_location: ''
           production_branch: 'main'
         env:
-          IS_PREVIEW: ${{ github.event_name == 'pull_request' }}
-          NEXT_PUBLIC_APP_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+          NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW: ${{ github.event_name == 'pull_request' }}
+          AUTH0_BASE_URL: ${{ github.event_name == 'pull_request' && format('https://delightful-dune-0dd11491e-{0}.westus2.4.azurestaticapps.net', github.event.pull_request.number) || '' }}
       - name: Comment on Pull Request with Deployment URL
+
         if: github.event_name == 'pull_request'
+
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

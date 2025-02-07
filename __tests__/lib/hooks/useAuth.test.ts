@@ -29,7 +29,7 @@ describe('useAuth', () => {
 
     describe('Preview Environment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'true';
             delete process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
         });
 
@@ -88,7 +88,9 @@ describe('useAuth', () => {
     describe('Production Environment', () => {
         beforeEach(() => {
             process.env.NEXT_PUBLIC_AUTH0_BASE_URL = 'https://example.com';
-            delete process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT;
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = '';
+            (getCookie as jest.Mock).mockReturnValue(null);
+            (getMockUser as jest.Mock).mockReturnValue(null);
         });
 
         it('should return Auth0 user state', async () => {
@@ -103,6 +105,8 @@ describe('useAuth', () => {
             await act(async () => {
                 hook = renderHook(() => useAuth());
             });
+
+            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBeFalsy();
 
             expect(hook.result.current.user).toEqual(auth0User);
             expect(hook.result.current.error).toBeNull();
@@ -121,7 +125,7 @@ describe('useAuth', () => {
 
     describe('Azure Static Web Apps Deployment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'false';
         });
 
         it('should verify correct deployment on Azure Static Web Apps', async () => {
@@ -140,7 +144,7 @@ describe('useAuth', () => {
             expect(hook.result.current.user).toEqual(auth0User);
             expect(hook.result.current.error).toBeNull();
             expect(hook.result.current.isLoading).toBe(false);
-            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('false');
         });
     });
 });

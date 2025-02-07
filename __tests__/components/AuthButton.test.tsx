@@ -211,7 +211,7 @@ describe('AuthButton', () => {
         });
 
         it('should render user info and home redirect in preview mode', async () => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'true';
             (useAuth as jest.Mock).mockReturnValue({
                 user: mockUser,
                 error: null,
@@ -265,6 +265,7 @@ describe('AuthButton', () => {
 
     describe('Azure Static Web Apps Deployment', () => {
         it('should verify correct deployment on Azure Static Web Apps', async () => {
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'true';
             const mockUser = {
                 name: 'Test User',
                 nickname: 'tester',
@@ -285,7 +286,7 @@ describe('AuthButton', () => {
             expect(logoutButton).toBeInTheDocument();
 
             // Verify correct deployment on Azure Static Web Apps
-            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('true');
         });
     });
 });

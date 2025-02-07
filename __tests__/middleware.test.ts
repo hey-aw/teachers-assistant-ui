@@ -40,7 +40,7 @@ describe('Middleware', () => {
 
     describe('Azure Static Web Apps Deployment', () => {
         beforeEach(() => {
-            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+            process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW = 'false';
         });
 
         it('should verify correct deployment on Azure Static Web Apps', () => {
@@ -49,7 +49,7 @@ describe('Middleware', () => {
 
             expect(response).toBe(mockAuth0Response);
             expect((response as NextResponse).status).toBe(200);
-            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+            expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('false');
         });
     });
 });

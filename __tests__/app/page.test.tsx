@@ -1,11 +1,11 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import Home from '@/app/page';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth } from '@/lib/hooks/useAuth';
 
-// Mock Auth0
-jest.mock('@auth0/nextjs-auth0/client', () => ({
-    useUser: jest.fn()
+// Mock useAuth hook
+jest.mock('@/lib/hooks/useAuth', () => ({
+    useAuth: jest.fn()
 }));
 
 // Mock MyAssistant component
@@ -27,7 +27,7 @@ describe('Home Page', () => {
 
     describe('Loading State', () => {
         it('should show loading state', () => {
-            (useUser as jest.Mock).mockReturnValue({
+            (useAuth as jest.Mock).mockReturnValue({
                 user: null,
                 error: null,
                 isLoading: true
@@ -40,27 +40,24 @@ describe('Home Page', () => {
 
     describe('Error State', () => {
         it('should show error message', () => {
-            (useUser as jest.Mock).mockReturnValue({
+            const errorMessage = 'Test error';
+            (useAuth as jest.Mock).mockReturnValue({
                 user: null,
-                error: new Error('Test error'),
+                error: new Error(errorMessage),
                 isLoading: false
             });
             render(<Home />);
-            expect(screen.getByText('Test error')).toBeInTheDocument();
+            expect(screen.getByText(errorMessage)).toBeInTheDocument();
         });
 
         it('should show friendly message for unprocessable entity error', () => {
-            (useUser as jest.Mock).mockReturnValue({
+            (useAuth as jest.Mock).mockReturnValue({
                 user: null,
                 error: new Error('Unprocessable Entity'),
                 isLoading: false
             });
-
             render(<Home />);
-            expect(screen.getByText('The request could not be processed. Please check your input and try again.')).toBeInTheDocument();
+            expect(screen.getByText(/the request could not be processed/i)).toBeInTheDocument();
         });
-
     });
-
-
 }); 

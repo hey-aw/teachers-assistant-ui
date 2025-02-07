@@ -183,6 +183,5 @@ process.env = {
   AUTH0_ISSUER_BASE_URL: 'https://test.auth0.com',
   AUTH0_CLIENT_ID: 'test-client-id',
   AUTH0_CLIENT_SECRET: 'test-client-secret',
-  AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'production',
-  NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT: 'production'
+  NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW: 'false'
 }; 

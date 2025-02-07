@@ -16,8 +16,8 @@ export const useAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log(`NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT}\nAZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT}`);
-        if (process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT !== 'Production') {
+        console.log(`NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW: ${process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW}\nSWA_APP_ENV_IS_PREVIEW: ${process.env.SWA_APP_ENV_IS_PREVIEW}`);
+        if (process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW === 'true') {
           const mockEmail = await getCookie('mockEmail');
           const mockUser = mockEmail ? getMockUser(mockEmail.toString()) : null;
           setAuthState({ user: mockUser, error: null, isLoading: false });
@@ -40,7 +40,7 @@ export const useAuth = () => {
 
     // Set up interval for checking cookie changes in preview mode
     let interval: NodeJS.Timeout | null = null;
-    if (process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview') {
+    if (process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW === 'true') {
       interval = setInterval(checkAuth, 1000);
     }
 

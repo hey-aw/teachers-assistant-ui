@@ -11,13 +11,7 @@ export default function Home() {
   const [loginUrl, setLoginUrl] = useState('/api/auth/login');
 
   useEffect(() => {
-    console.log(`
-      NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT}
-      NEXT_PUBLIC_APP_ENV: ${process.env.NEXT_PUBLIC_APP_ENV}
-      NODE_ENV: ${process.env.NODE_ENV}
-      IS_PREVIEW: ${process.env.IS_PREVIEW}
-    `)
-    setLoginUrl(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT != 'Production'
+    setLoginUrl(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW
       ? '/mock-login'
       : '/api/auth/login');
   }, []);

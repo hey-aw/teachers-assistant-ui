@@ -15,7 +15,7 @@ export default function AuthButton() {
     const [isPreview, setIsPreview] = useState(false);
 
     useEffect(() => {
-        setIsPreview(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview');
+        setIsPreview(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW === 'true');
     }, []);
 
     const handleLogout = () => {

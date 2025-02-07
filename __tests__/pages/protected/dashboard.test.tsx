@@ -34,6 +34,6 @@ describe('Dashboard Page', () => {
         expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
 
         // Verify correct deployment on Azure Static Web Apps
-        expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        expect(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW).toBe('false');
     });
 });
