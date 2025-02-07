@@ -32,7 +32,6 @@ jobs:
           action: 'upload'
           app_location: '/'
           api_location: ''
-          output_location: 'out'
           production_branch: 'main'
         env:
           IS_PREVIEW: ${{ github.event_name == 'pull_request' }}
