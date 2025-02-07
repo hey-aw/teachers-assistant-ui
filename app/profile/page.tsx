@@ -2,6 +2,7 @@
 
 import { useUser } from '@auth0/nextjs-auth0/client';
 import React from 'react';
+import Link from 'next/link';
 
 export default function ProfilePage() {
     const { user, error, isLoading } = useUser();
@@ -29,6 +30,10 @@ export default function ProfilePage() {
     if (!user) return (
         <div className="flex justify-center items-center min-h-[50vh]">
             <div className="text-lg">Please log in to view your profile.</div>
+            <Link href="/api/auth/login"
+                className="inline-flex items-center justify-center px-12 py-4 text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full overflow-hidden transition-all duration-300 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105 mt-4">
+                <span className="relative">Login</span>
+            </Link>
         </div>
     );
 
@@ -58,6 +63,15 @@ export default function ProfilePage() {
                         )
                     ))}
                 </dl>
+            </div>
+
+            <div className="mt-6 text-center">
+                <a
+                    href="/api/auth/logout"
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-500 hover:to-red-600 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+                >
+                    Logout
+                </a>
             </div>
         </div>
     );

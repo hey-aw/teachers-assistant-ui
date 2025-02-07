@@ -104,4 +104,26 @@ describe('useAuth', () => {
             expect(getMockUser).not.toHaveBeenCalled();
         });
     });
-}); 
+
+    describe('Azure Static Web Apps Deployment', () => {
+        beforeEach(() => {
+            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+        });
+
+        it('should verify correct deployment on Azure Static Web Apps', () => {
+            const auth0User = { name: 'Auth0 User', email: 'auth0@example.com' };
+            (useUser as jest.Mock).mockReturnValue({
+                user: auth0User,
+                error: null,
+                isLoading: false
+            });
+
+            const { result } = renderHook(() => useAuth());
+
+            expect(result.current.user).toEqual(auth0User);
+            expect(result.current.error).toBeNull();
+            expect(result.current.isLoading).toBe(false);
+            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        });
+    });
+});

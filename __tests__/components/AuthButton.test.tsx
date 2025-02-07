@@ -242,4 +242,31 @@ describe('AuthButton', () => {
             expect(loginButton.getAttribute('href')).toBe('/api/auth/login');
         });
     });
+
+    describe('Azure Static Web Apps Deployment', () => {
+        it('should verify correct deployment on Azure Static Web Apps', async () => {
+            const mockUser = {
+                name: 'Test User',
+                nickname: 'tester',
+                picture: 'https://example.com/avatar.jpg'
+            };
+
+            (useUser as jest.Mock).mockReturnValue({
+                user: mockUser,
+                error: null,
+                isLoading: false
+            });
+
+            render(<AuthButton />);
+
+            expect(screen.getByText('Welcome, tester')).toBeInTheDocument();
+            expect(screen.getByAltText('User avatar')).toBeInTheDocument();
+            const logoutButton = screen.getByText('logout');
+            expect(logoutButton).toBeInTheDocument();
+            expect(logoutButton.getAttribute('href')).toBe('/api/auth/logout');
+
+            // Verify correct deployment on Azure Static Web Apps
+            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        });
+    });
 });
