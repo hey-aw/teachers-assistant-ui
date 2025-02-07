@@ -3,13 +3,12 @@
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { useAuth } from '@/lib/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { deleteCookie } from 'cookies-next';
 import { useEffect, useState } from 'react';
-
+import { useUser } from '@auth0/nextjs-auth0/client';
 export default function AuthButton() {
-    const { user, error, isLoading } = useAuth();
+    const { user, error, isLoading } = useUser();
     const { t } = useTranslation();
     const router = useRouter();
     const [isPreview, setIsPreview] = useState(false);
