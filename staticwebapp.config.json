@@ -36,10 +36,13 @@
         }
     ],
     "navigationFallback": {
-        "rewrite": "/index.html",
+        "rewrite": "/_next/static/server/pages/index.html",
         "exclude": [
+            "/_next/*",
+            "/api/*",
             "/images/*.{png,jpg,gif}",
-            "/css/*"
+            "/css/*",
+            "/static/*"
         ]
     },
     "globalHeaders": {
