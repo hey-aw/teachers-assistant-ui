@@ -10,12 +10,13 @@ const mockUsers: MockUser[] = [
         name: 'Test User',
         email: 'test@example.com',
         emailVerified: true,
-        picture: 'https://example.com/avatar.jpg'
+        picture: 'https://ui-avatars.com/api/?name=Test+User&background=0D8ABC&color=fff'
     },
     {
         name: 'Admin User',
         email: 'admin@example.com',
-        emailVerified: true
+        emailVerified: true,
+        picture: 'https://ui-avatars.com/api/?name=Admin+User&background=6B21A8&color=fff'
     }
 ];
 
