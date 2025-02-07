@@ -45,7 +45,6 @@ describe('Home Page', () => {
                 error: new Error('Test error'),
                 isLoading: false
             });
-
             render(<Home />);
             expect(screen.getByText('Test error')).toBeInTheDocument();
         });
@@ -60,8 +59,8 @@ describe('Home Page', () => {
             render(<Home />);
             expect(screen.getByText('The request could not be processed. Please check your input and try again.')).toBeInTheDocument();
         });
-        
+
     });
-    
+
 
 }); 

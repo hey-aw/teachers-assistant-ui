@@ -33,46 +33,55 @@ describe('useAuth', () => {
             delete process.env.NEXT_PUBLIC_AUTH0_BASE_URL;
         });
 
-        it('should return mock user when cookie exists', () => {
+        it('should return mock user when cookie exists', async () => {
             const mockEmail = 'test@example.com';
             const mockUser = { name: 'Test User', email: mockEmail };
             (getCookie as jest.Mock).mockReturnValue(mockEmail);
             (getMockUser as jest.Mock).mockReturnValue(mockUser);
 
-            const { result } = renderHook(() => useAuth());
+            let hook: any;
+            await act(async () => {
+                hook = renderHook(() => useAuth());
+            });
 
-            expect(result.current.user).toEqual(mockUser);
-            expect(result.current.error).toBeNull();
-            expect(result.current.isLoading).toBe(false);
+            expect(hook.result.current.user).toEqual(mockUser);
+            expect(hook.result.current.error).toBeNull();
+            expect(hook.result.current.isLoading).toBe(false);
         });
 
-        it('should return null user when no cookie exists', () => {
+        it('should return null user when no cookie exists', async () => {
             (getCookie as jest.Mock).mockReturnValue(null);
 
-            const { result } = renderHook(() => useAuth());
+            let hook: any;
+            await act(async () => {
+                hook = renderHook(() => useAuth());
+            });
 
-            expect(result.current.user).toBeNull();
-            expect(result.current.error).toBeNull();
-            expect(result.current.isLoading).toBe(false);
+            expect(hook.result.current.user).toBeNull();
+            expect(hook.result.current.error).toBeNull();
+            expect(hook.result.current.isLoading).toBe(false);
         });
 
-        it('should update user when cookie changes', () => {
+        it('should update user when cookie changes', async () => {
             const mockEmail = 'test@example.com';
             const mockUser = { name: 'Test User', email: mockEmail };
             (getCookie as jest.Mock).mockReturnValue(null);
             (getMockUser as jest.Mock).mockReturnValue(mockUser);
 
-            const { result } = renderHook(() => useAuth());
+            let hook: any;
+            await act(async () => {
+                hook = renderHook(() => useAuth());
+            });
 
-            expect(result.current.user).toBeNull();
+            expect(hook.result.current.user).toBeNull();
 
             // Simulate cookie change
-            act(() => {
+            await act(async () => {
                 (getCookie as jest.Mock).mockReturnValue(mockEmail);
                 jest.advanceTimersByTime(1000);
             });
 
-            expect(result.current.user).toEqual(mockUser);
+            expect(hook.result.current.user).toEqual(mockUser);
         });
     });
 
@@ -82,7 +91,7 @@ describe('useAuth', () => {
             delete process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT;
         });
 
-        it('should return Auth0 user state', () => {
+        it('should return Auth0 user state', async () => {
             const auth0User = { name: 'Auth0 User', email: 'auth0@example.com' };
             (useUser as jest.Mock).mockReturnValue({
                 user: auth0User,
@@ -90,18 +99,48 @@ describe('useAuth', () => {
                 isLoading: false
             });
 
-            const { result } = renderHook(() => useAuth());
+            let hook: any;
+            await act(async () => {
+                hook = renderHook(() => useAuth());
+            });
 
-            expect(result.current.user).toEqual(auth0User);
-            expect(result.current.error).toBeNull();
-            expect(result.current.isLoading).toBe(false);
+            expect(hook.result.current.user).toEqual(auth0User);
+            expect(hook.result.current.error).toBeNull();
+            expect(hook.result.current.isLoading).toBe(false);
         });
 
-        it('should not check for mock cookies', () => {
-            renderHook(() => useAuth());
+        it('should not check for mock cookies', async () => {
+            await act(async () => {
+                renderHook(() => useAuth());
+            });
 
             expect(getCookie).not.toHaveBeenCalled();
             expect(getMockUser).not.toHaveBeenCalled();
         });
     });
-}); 
+
+    describe('Azure Static Web Apps Deployment', () => {
+        beforeEach(() => {
+            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+        });
+
+        it('should verify correct deployment on Azure Static Web Apps', async () => {
+            const auth0User = { name: 'Auth0 User', email: 'auth0@example.com' };
+            (useUser as jest.Mock).mockReturnValue({
+                user: auth0User,
+                error: null,
+                isLoading: false
+            });
+
+            let hook: any;
+            await act(async () => {
+                hook = renderHook(() => useAuth());
+            });
+
+            expect(hook.result.current.user).toEqual(auth0User);
+            expect(hook.result.current.error).toBeNull();
+            expect(hook.result.current.isLoading).toBe(false);
+            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        });
+    });
+});
