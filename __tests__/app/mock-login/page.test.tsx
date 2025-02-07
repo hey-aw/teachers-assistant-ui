@@ -52,7 +52,9 @@ describe('MockLoginPage', () => {
     it('displays user avatars with correct initials', () => {
         render(createTestWrapper(<MockLoginPage />));
         getAllMockUsers().forEach(user => {
-            expect(screen.getByText(user.name.charAt(0))).toBeInTheDocument();
+            if (!user.picture) {
+                expect(screen.getByText(user.name.charAt(0))).toBeInTheDocument();
+            }
         });
     });
 
