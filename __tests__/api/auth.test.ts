@@ -28,9 +28,7 @@ const mockRequest = (path: string, cookies: Record<string, string> = {}) => {
         req.cookies.set(name, value);
     });
 
-    // Add params to request context
-    const context = { params: { auth0: path } };
-    return { req, context };
+    return req;
 };
 
 describe('Auth Routes', () => {
@@ -63,11 +61,11 @@ describe('Auth Routes', () => {
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
 
-            const { req, context } = mockRequest('login');
+            const request = mockRequest('login');
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
-            expect(mockHandleAuth).toHaveBeenCalledWith(req);
+            expect(mockHandleAuth).toHaveBeenCalledWith(request);
             expect(response).toBe(mockResponse);
         });
     });
@@ -83,28 +81,31 @@ describe('Auth Routes', () => {
             });
             mockHandleAuth.mockResolvedValue(mockResponse);
 
-            const { req, context } = mockRequest('logout');
+            const request = mockRequest('logout');
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
-            expect(mockHandleAuth).toHaveBeenCalledWith(req);
+            expect(mockHandleAuth).toHaveBeenCalledWith(request);
             expect(response).toBe(mockResponse);
         });
 
         it('should clear auth state on logout', async () => {
+            // Set preview mode for mock auth
             process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
             delete process.env.AUTH0_BASE_URL;
 
-            const { req, context } = mockRequest('logout', {
+            const request = mockRequest('logout', {
                 mockEmail: 'test@example.com'
             });
 
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
-            expect(response.status).toBe(200);
+            // In preview mode, we expect a redirect
+            expect(response.status).toBe(200); // Auth0 handler response
             expect(response.headers.get('Content-Type')).toBe('application/json');
 
+            // Verify cookies are cleared
             const cookieHeader = response.headers.get('Set-Cookie');
             const cookies = cookieHeader ? cookieHeader.split(',') : [];
             expect(cookies).toBeDefined();
@@ -127,9 +128,9 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
             (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
 
-            const { req, context } = mockRequest('me');
+            const request = mockRequest('me');
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
             expect(response.headers.get('Content-Type')).toBe('application/json');
             const data = await response.json();
@@ -144,9 +145,9 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
             (getSession as jest.Mock).mockResolvedValue(null);
 
-            const { req, context } = mockRequest('me');
+            const request = mockRequest('me');
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
             expect(response.headers.get('Content-Type')).toBe('application/json');
             const data = await response.json();
@@ -163,6 +164,7 @@ describe('Auth Routes', () => {
                 email: 'test@example.com'
             };
 
+            // Setup mock responses
             const mockResponse = NextResponse.json({ user: mockUser }, {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
@@ -170,13 +172,16 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
             (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
 
+            // Make multiple concurrent requests
             const requests = Array(3).fill(null).map(() => mockRequest('userinfo'));
             const { GET } = require('@/app/api/auth/[auth0]/route');
 
+            // Wait for all requests to complete
             const responses = await Promise.all(
-                requests.map(({ req, context }) => GET(req, context))
+                requests.map(req => GET(req))
             );
 
+            // Verify all responses are valid
             for (const response of responses) {
                 expect(response.status).toBe(200);
                 const data = await response.json();
@@ -185,28 +190,32 @@ describe('Auth Routes', () => {
         });
 
         it('should handle race conditions in preview mode', async () => {
+            // Set preview environment
             process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'preview';
             delete process.env.AUTH0_BASE_URL;
 
-            const { req, context } = mockRequest('userinfo', {
-                mockEmail: 'test@example.com'
-            });
+            const mockEmail = 'test@example.com';
+            const request = mockRequest('userinfo');
+            // Add mock email cookie
+            request.cookies.set('mockEmail', mockEmail);
 
             const { GET } = require('@/app/api/auth/[auth0]/route');
 
+            // Make concurrent requests
             const responses = await Promise.all([
-                GET(req, context),
-                GET(req, context),
-                GET(req, context)
+                GET(request),
+                GET(request),
+                GET(request)
             ]);
 
+            // All responses should be consistent
             const results = await Promise.all(
                 responses.map(res => res.json())
             );
 
             results.forEach(result => {
                 expect(result.user).toBeTruthy();
-                expect(result.user.email).toBe('test@example.com');
+                expect(result.user.email).toBe(mockEmail);
             });
         });
     });
@@ -227,14 +236,15 @@ describe('Auth Routes', () => {
             mockHandleAuth.mockResolvedValue(mockResponse);
             (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
 
-            const { req, context } = mockRequest('me');
+            const request = mockRequest('me');
             const { GET } = require('@/app/api/auth/[auth0]/route');
-            const response = await GET(req, context);
+            const response = await GET(request);
 
             expect(response.headers.get('Content-Type')).toBe('application/json');
             const data = await response.json();
             expect(data).toEqual({ user: mockUser });
 
+            // Verify correct deployment on Azure Static Web Apps
             expect(process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
         });
     });
