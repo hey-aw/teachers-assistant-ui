@@ -32,8 +32,6 @@ jobs:
           action: 'upload'
           app_location: '/'
           api_location: ''
-          output_location: '.next'
-          app_build_command: 'pnpm build'
           skip_app_build: false
       - name: Comment on Pull Request with Deployment URL
         if: github.event_name == 'pull_request'
