@@ -1,8 +1,10 @@
 'use client';
 
+import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useEffect, useState } from 'react';
+import { getCookie } from 'cookies-next';
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
@@ -34,6 +36,8 @@ export default function Home() {
       </main>
     );
   }
+
+  const user = isPreviewEnvironment() ? mockUser : auth0User;
 
   if (user) {
     return (
