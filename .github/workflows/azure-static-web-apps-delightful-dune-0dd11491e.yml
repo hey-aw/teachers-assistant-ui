@@ -26,8 +26,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10  # Specify the pnpm version or omit to use the version from packageManager field
   
       - name: Build And Deploy
         id: builddeploy
