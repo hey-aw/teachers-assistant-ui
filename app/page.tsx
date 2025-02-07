@@ -1,11 +1,20 @@
 'use client';
 
-import { useUser } from '@auth0/nextjs-auth0/client';
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
-  const { user, error, isLoading } = useUser();
+  const { user, error, isLoading } = useAuth();
+  const [loginUrl, setLoginUrl] = useState('/api/auth/login');
+
+  useEffect(() => {
+    setLoginUrl(process.env.NEXT_PUBLIC_SWA_APP_ENV_IS_PREVIEW
+      ? '/mock-login'
+      : '/api/auth/login');
+  }, []);
 
   if (isLoading) return (
     <main className="h-dvh flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
@@ -69,10 +78,10 @@ export default function Home() {
           Ready to Begin?
         </h1>
         <p className="text-gray-600 text-xl">Connect with your AI assistant and start exploring</p>
-        <Link href="/api/auth/login"
+        <a href={loginUrl}
           className="inline-flex items-center justify-center px-12 py-4 text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full overflow-hidden transition-all duration-300 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105">
           <span className="relative">Login to Continue</span>
-        </Link>
+        </a>
       </div>
     </main>
   );

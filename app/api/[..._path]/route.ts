@@ -44,30 +44,14 @@ function buildApiUrl(baseUrl: string, path: string, queryString: string) {
   }
 }
 
+function isLangGraphRoute(pathname: string) {
+  return pathname.includes('/threads') || pathname.includes('/stream');
+}
+
 async function handleRequest(req: NextRequest, method: string) {
   try {
     console.log('Request URL:', req.url);
     console.log('Request pathname:', req.nextUrl.pathname);
-
-    // Skip auth check in preview mode
-    if (!isPreviewEnvironment()) {
-      // Get the access token using Edge-compatible method
-      const authResult = await getAccessToken(req, NextResponse.next(), undefined);
-      const accessToken = authResult?.accessToken;
-
-      if (!accessToken) {
-        return new NextResponse(
-          JSON.stringify({ error: "Unauthorized - No valid session" }),
-          {
-            status: 401,
-            headers: {
-              'Content-Type': 'application/json',
-              ...getCorsHeaders(),
-            },
-          }
-        );
-      }
-    }
 
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -144,19 +128,14 @@ async function handleRequest(req: NextRequest, method: string) {
         headers[key.toLowerCase()] = value;
       }
     } catch (e) {
-      console.warn('Failed to read response headers:', e);
     }
-    console.log('Response headers:', headers);
 
     let responseBody;
     try {
       const text = await res.text();
-      console.log('Raw response text:', text);
       try {
         responseBody = JSON.parse(text);
-        console.log('Parsed response body:', responseBody);
       } catch (e) {
-        console.log('Failed to parse response as JSON, using raw text');
         responseBody = text;
       }
     } catch (e) {
@@ -166,9 +145,8 @@ async function handleRequest(req: NextRequest, method: string) {
 
     // For non-2xx responses, treat as error
     if (res.status >= 400) {
-      console.log('Response not OK, creating error response');
       const errorMessage = responseBody?.message || responseBody?.error || "API request failed";
-      console.log('Error message:', errorMessage);
+      console.error('Error message:', errorMessage);
       return NextResponse.json(
         { error: errorMessage },
         {

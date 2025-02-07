@@ -18,7 +18,8 @@ const config: Config = {
     transformIgnorePatterns: [
         '/node_modules/(?!(@assistant-ui|lucide-react)/)',
     ],
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    modulePaths: ['<rootDir>']
 };
 
 export default createJestConfig(config);
