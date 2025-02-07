@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
+  trailingSlash: true,
   images: {
     remotePatterns: [
       {
@@ -24,7 +25,18 @@ const nextConfig = {
         pathname: '/api/**',
       }
     ],
+  },
+  // Exclude .swa paths from middleware processing
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/((?!.swa).*)',
+          destination: '/$1',
+        }
+      ]
+    }
   }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
