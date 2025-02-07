@@ -3,13 +3,21 @@
 import Link from 'next/link';
 import { MyAssistant } from "@/components/MyAssistant";
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const { user, error, isLoading } = useAuth();
   const [loginUrl, setLoginUrl] = useState('/api/auth/login');
 
   useEffect(() => {
-    setLoginUrl(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview'
+    console.log(`
+      NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT}
+      NEXT_PUBLIC_APP_ENV: ${process.env.NEXT_PUBLIC_APP_ENV}
+      NODE_ENV: ${process.env.NODE_ENV}
+      IS_PREVIEW: ${process.env.IS_PREVIEW}
+    `)
+    setLoginUrl(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT != 'Production'
       ? '/mock-login'
       : '/api/auth/login');
   }, []);
@@ -73,10 +81,10 @@ export default function Home() {
           Ready to Begin?
         </h1>
         <p className="text-gray-600 text-xl">Connect with your AI assistant and start exploring</p>
-        <Link href={loginUrl}
+        <a href={loginUrl}
           className="inline-flex items-center justify-center px-12 py-4 text-lg font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full overflow-hidden transition-all duration-300 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105">
           <span className="relative">Login to Continue</span>
-        </Link>
+        </a>
       </div>
     </main>
   );

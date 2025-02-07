@@ -16,7 +16,8 @@ export const useAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        if (process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview') {
+        console.log(`NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT}\nAZURE_STATIC_WEBAPPS_ENVIRONMENT: ${process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT}`);
+        if (process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT !== 'Production') {
           const mockEmail = await getCookie('mockEmail');
           const mockUser = mockEmail ? getMockUser(mockEmail.toString()) : null;
           setAuthState({ user: mockUser, error: null, isLoading: false });
