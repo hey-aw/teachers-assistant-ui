@@ -2,6 +2,10 @@ import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge';
 import { NextResponse } from 'next/server';
 import type { NextRequest, NextFetchEvent } from 'next/server';
 
+function isPreviewEnvironment() {
+  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
+}
+
 // Base middleware function for handling CORS and API keys
 async function handleCorsAndApiKey(request: NextRequest) {
   // Handle preflight requests
@@ -45,7 +49,8 @@ async function middleware(request: NextRequest, event: NextFetchEvent) {
   const path = request.nextUrl.pathname;
 
   // For LangGraph API routes (need API key but not auth)
-  if (path.includes('/threads') || path.includes('/stream')) {
+  if (path.includes('/threads') || path.includes('/stream') ||
+    path.startsWith('/api/threads') || path.startsWith('/api/runs/stream')) {
     return handleCorsAndApiKey(request);
   }
 
@@ -55,9 +60,14 @@ async function middleware(request: NextRequest, event: NextFetchEvent) {
     return handler(request, event);
   }
 
-  // For other API routes that just need CORS
+  // For API routes
   if (path.startsWith('/api')) {
-    return handleCorsAndApiKey(request);
+    // Skip auth in preview mode
+    if (isPreviewEnvironment()) {
+      return handleCorsAndApiKey(request);
+    }
+    const handler = withMiddlewareAuthRequired();
+    return handler(request, event);
   }
 
   return NextResponse.next();

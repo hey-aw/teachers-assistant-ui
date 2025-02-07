@@ -8,15 +8,15 @@ interface MockUser {
 const mockUsers: MockUser[] = [
     {
         name: 'Test User',
-        email: 'test@example.com',
+        email: 'test@eddolearning.com',
         emailVerified: true,
-        picture: 'https://ui-avatars.com/api/?name=Test+User&background=0D8ABC&color=fff'
+        picture: 'https://eddolearning.com/wp-content/uploads/2024/08/underwater-photography-of-green-jelly-fish-1059161-scaled-e1724356562521.jpg'
     },
     {
-        name: 'Admin User',
-        email: 'admin@example.com',
-        emailVerified: true,
-        picture: 'https://ui-avatars.com/api/?name=Admin+User&background=6B21A8&color=fff'
+        name: 'Unverified User',
+        email: 'unverified@eddolearning.com',
+        emailVerified: false,
+        picture: ''
     }
 ];
 
