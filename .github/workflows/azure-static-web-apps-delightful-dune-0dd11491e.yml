@@ -33,6 +33,7 @@ jobs:
           app_location: '/'
           api_location: ''
           output_location: ''
+          production_branch: "main"
       - name: Comment on Pull Request with Deployment URL
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
