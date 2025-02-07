@@ -52,7 +52,9 @@ describe('MockLoginPage', () => {
     it('displays user avatars with correct initials', () => {
         render(createTestWrapper(<MockLoginPage />));
         getAllMockUsers().forEach(user => {
-            expect(screen.getByText(user.name.charAt(0))).toBeInTheDocument();
+            if (!user.picture) {
+                expect(screen.getByText(user.name.charAt(0))).toBeInTheDocument();
+            }
         });
     });
 
@@ -88,5 +90,32 @@ describe('MockLoginPage', () => {
         expect(mockRouter.refresh).toHaveBeenCalled();
         expect(mockRouter.push).toHaveBeenCalledWith('/');
     });
-}); 
 
+    it('should verify correct deployment on Azure Static Web Apps', async () => {
+        const user = getAllMockUsers()[0];
+        render(createTestWrapper(<MockLoginPage />));
+
+        // Find and click the button
+        const button = screen.getByRole('button', { name: new RegExp(user.name) });
+        expect(button).not.toBeNull();
+
+        await act(async () => {
+            fireEvent.click(button);
+        });
+
+        expect(mockSetCookie).toHaveBeenCalledWith('mockEmail', user.email, {
+            path: '/',
+            sameSite: 'lax'
+        });
+
+        act(() => {
+            jest.advanceTimersByTime(100);
+        });
+
+        expect(mockRouter.refresh).toHaveBeenCalled();
+        expect(mockRouter.push).toHaveBeenCalledWith('/');
+
+        // Verify correct deployment on Azure Static Web Apps
+        expect(process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+    });
+});

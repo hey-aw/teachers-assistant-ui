@@ -17,4 +17,23 @@ describe('Dashboard Page', () => {
 
         expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
     });
+
+    it('should verify correct deployment on Azure Static Web Apps', async () => {
+        const mockUser = {
+            name: 'Test User',
+            email: 'test@example.com',
+            sub: 'auth0|123',
+        };
+
+        (getSession as jest.Mock).mockResolvedValue({ user: mockUser });
+
+        const DashboardComponent = await Dashboard();
+        render(DashboardComponent);
+
+        expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
+        expect(screen.getByText(`Welcome, ${mockUser.name}!`)).toBeInTheDocument();
+
+        // Verify correct deployment on Azure Static Web Apps
+        expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+    });
 });

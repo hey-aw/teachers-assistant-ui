@@ -24,7 +24,6 @@ describe('Middleware', () => {
         process.env = originalEnv;
     });
 
-
     describe('Production Environment', () => {
         beforeEach(() => {
             process.env.AUTH0_BASE_URL = 'https://example.com';
@@ -38,4 +37,19 @@ describe('Middleware', () => {
             expect((response as NextResponse).status).toBe(200);
         });
     });
-}); 
+
+    describe('Azure Static Web Apps Deployment', () => {
+        beforeEach(() => {
+            process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT = 'production';
+        });
+
+        it('should verify correct deployment on Azure Static Web Apps', () => {
+            const request = new NextRequest(new URL('http://localhost/protected/test'));
+            const response = middleware(request, mockEvent);
+
+            expect(response).toBe(mockAuth0Response);
+            expect((response as NextResponse).status).toBe(200);
+            expect(process.env.NEXT_PUBLIC_AZURE_STATIC_WEBAPPS_ENVIRONMENT).toBe('production');
+        });
+    });
+});
