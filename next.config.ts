@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -25,11 +24,7 @@ const nextConfig: NextConfig = {
         pathname: '/api/**',
       }
     ],
-  },
-  i18n: {
-    locales: ['en', 'es'],
-    defaultLocale: 'en',
-  },
+  }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

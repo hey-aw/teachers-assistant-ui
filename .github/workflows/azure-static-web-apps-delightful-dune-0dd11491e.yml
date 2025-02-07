@@ -36,7 +36,6 @@ jobs:
         env:
           IS_PREVIEW: ${{ github.event_name == 'pull_request' }}
           NEXT_PUBLIC_APP_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
-          NODE_ENV: ${{ github.event_name == 'pull_request' && 'development' || 'production' }}
       - name: Comment on Pull Request with Deployment URL
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
