@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Thread, type TextContentPartComponent } from "@assistant-ui/react";
 import {
   LangChainMessage,
@@ -28,24 +28,60 @@ const InterruptUI = () => {
 
   if (!interrupt) return null;
 
-  const handleResponse = (response: "yes" | "no") => {
-    sendCommand({ resume: response });
-  };
+  // Only show custom UI for OAuth interrupts
+  const isOAuthInterrupt = interrupt.value.includes('Please use the following link to authorize');
+  if (!isOAuthInterrupt) {
+    return (
+      <div className="flex flex-col gap-2 p-4 border rounded-lg bg-gray-50">
+        <div className="text-lg font-medium">Interrupt: {interrupt.value}</div>
+        <div className="flex items-end gap-2">
+          <Button onClick={() => sendCommand({ resume: "yes" })} variant="default">
+            Yes
+          </Button>
+          <Button onClick={() => sendCommand({ resume: "no" })} variant="outline">
+            No
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const urlMatch = interrupt.value.match(/https:\/\/accounts\.google\.com[^\s']*/);
+  const authUrl = urlMatch ? urlMatch[0] : '';
 
   return (
     <div className="flex flex-col gap-2 p-4 border rounded-lg bg-gray-50">
-      <div className="text-lg font-medium">Interrupt: {interrupt.value}</div>
+      <div className="text-lg font-medium">Authorization Required</div>
+      <div className="text-sm text-gray-600 mb-2">
+        Please visit this URL to authorize access:
+      </div>
+      <div className="bg-gray-100 p-2 rounded break-all mb-2 font-mono text-sm">
+        {authUrl}
+      </div>
       <div className="flex items-end gap-2">
-        <Button onClick={() => handleResponse("yes")} variant="default">
-          Yes
+        <Button
+          onClick={() => window.open(authUrl, '_blank', 'width=600,height=800')}
+          variant="default"
+        >
+          Open URL
         </Button>
-        <Button onClick={() => handleResponse("no")} variant="outline">
-          No
+        <Button
+          onClick={() => sendCommand({ resume: 'no' })}
+          variant="outline"
+        >
+          Cancel
         </Button>
       </div>
     </div>
   );
 };
+
+interface AuthInterrupt {
+  value: string;
+  resumable: boolean;
+  ns: null;
+  when: string;
+}
 
 export function MyAssistant() {
   const threadIdRef = useRef<string | undefined>(undefined);
@@ -96,3 +132,5 @@ export function MyAssistant() {
     </div>
   );
 }
+
+export default MyAssistant;
