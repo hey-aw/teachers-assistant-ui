@@ -25,7 +25,7 @@ function getCorsHeaders() {
 
 function buildApiUrl(baseUrl: string, path: string, queryString: string) {
   try {
-    console.log('buildApiUrl inputs:', { baseUrl, path, queryString });
+    console.log('LangGraph API base URL:', { baseUrl });
 
     if (!baseUrl) throw new Error('baseUrl is required');
     if (!path) throw new Error('path is required');
@@ -50,7 +50,6 @@ function isLangGraphRoute(pathname: string) {
 
 async function handleRequest(req: NextRequest, method: string) {
   try {
-    console.log('Request URL:', req.url);
     console.log('Request pathname:', req.nextUrl.pathname);
 
     const apiKey = getApiKey();
@@ -73,14 +72,12 @@ async function handleRequest(req: NextRequest, method: string) {
     }
 
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
-    console.log('Extracted path:', path);
     const searchParams = new URLSearchParams(req.nextUrl.search);
     searchParams.delete("_path");
     searchParams.delete("nxtP_path");
     const queryString = searchParams.toString()
       ? `?${searchParams.toString()}`
       : "";
-    console.log('Query string:', queryString);
 
     const apiUrl = buildApiUrl(baseUrl, path, queryString);
 

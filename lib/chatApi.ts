@@ -72,7 +72,13 @@ export const sendMessage = async (params: {
   threadId: string;
   messages: LangChainMessage[];
   command?: LangGraphCommand | undefined;
-  user?: { email?: string; email_verified?: boolean };
+  configurable?: {
+    user_id?: string;
+  };
+  user?: {
+    email?: string;
+    email_verified?: boolean;
+  };
 }) => {
   const client = createClient();
 
@@ -98,7 +104,7 @@ export const sendMessage = async (params: {
         ...(params.command && { command: params.command }),
         config: {
           configurable: {
-            user_id: userId,
+            user_id: params.configurable?.user_id || userId,
             thread_id: params.threadId
           }
         },
