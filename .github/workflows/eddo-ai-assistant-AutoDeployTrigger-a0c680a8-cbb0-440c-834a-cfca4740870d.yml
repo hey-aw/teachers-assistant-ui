@@ -1,0 +1,44 @@
+name: Trigger auto deployment for eddo-ai-assistant
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/eddo-ai-assistant-AutoDeployTrigger-a0c680a8-cbb0-440c-834a-cfca4740870d.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.EDDOAIASSISTANT_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: ca61c49e4f3facr.azurecr.io
+          registryUsername: ${{ secrets.EDDOAIASSISTANT_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.EDDOAIASSISTANT_REGISTRY_PASSWORD }}
+          containerAppName: eddo-ai-assistant
+          resourceGroup: eddo-container-apps
+          imageToBuild: ca61c49e4f3facr.azurecr.io/eddo-ai-assistant:${{ github.sha }}
+          
+            
+
+     
+
