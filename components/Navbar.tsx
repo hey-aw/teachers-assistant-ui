@@ -15,7 +15,7 @@ export default function Navbar() {
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
                 <div className="flex items-center gap-4">
                     <Link href="/" className="text-xl font-semibold">
-                        🦔 Teacher's Assistant
+                        🦔 Teacher&apos;s Assistant
                     </Link>
                 </div>
                 <div className="flex items-center gap-4">

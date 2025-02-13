@@ -69,7 +69,7 @@ async function handleRequest(req: NextRequest, method: string) {
   } catch (e: any) {
     console.error("Request error:", e);
     return NextResponse.json(
-      { error: "An error occurred processing your request" }, 
+      { error: "An error occurred processing your request" },
       { status: e.status ?? 500 }
     );
   }
