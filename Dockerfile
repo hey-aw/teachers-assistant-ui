@@ -4,7 +4,7 @@ ARG KEY1
 ARG KEY2
 
 # Enable pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm
 
 WORKDIR /usr/src/app
 

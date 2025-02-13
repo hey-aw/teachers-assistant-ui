@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import AuthButton from './AuthButton';
 import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
@@ -20,7 +19,6 @@ export default function Navbar() {
                     </Link>
                 </div>
                 <div className="flex items-center gap-4">
-                    <AuthButton />
                     <div>
                         <button onClick={() => changeLanguage('en')} className="px-2 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
                             {t('english')}

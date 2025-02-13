@@ -1,0 +1,14 @@
+{
+    "navigationFallback": {
+        "rewrite": "/index.html"
+    },
+    "routes": [
+        {
+            "route": "/*",
+            "rewrite": "/index.html"
+        }
+    ],
+    "mimeTypes": {
+        ".json": "text/json"
+    }
+}
