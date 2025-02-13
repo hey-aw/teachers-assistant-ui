@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 export const runtime = "edge";
 
