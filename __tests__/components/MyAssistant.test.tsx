@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
-import { MyAssistant } from '@/components/MyAssistant';
-import { createThread, sendMessage } from '@/lib/chatApi';
+import { MyAssistant } from '@/src/app/components/MyAssistant';
+import { createThread, sendMessage } from '@/src/app/lib/chatApi';
 import type { LangChainMessage } from '@assistant-ui/react-langgraph';
 import React from 'react';
 import { useLangGraphRuntime, useLangGraphInterruptState, useLangGraphSendCommand } from '@assistant-ui/react-langgraph';

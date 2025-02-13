@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Thread, type TextContentPartComponent } from "@assistant-ui/react";
+import { Thread } from "@assistant-ui/react";
 import {
   LangChainMessage,
   useLangGraphInterruptState,
@@ -13,13 +13,12 @@ import {
   SimpleImageAttachmentAdapter,
   SimpleTextAttachmentAdapter,
 } from "@assistant-ui/react";
-import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { Button } from "./ui/button";
+import { createThread, getThreadState, sendMessage } from "@/src/app/lib/chatApi";
+import { MarkdownTextPrimitive } from "@assistant-ui/react-markdown";
+import { Card } from "./ui/card";
 
-import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
-import { ToolFallback } from "./tools/ToolFallback";
-
-const MarkdownComponent = makeMarkdownText() as unknown as TextContentPartComponent;
+const MarkdownComponent = MarkdownTextPrimitive;
 
 const InterruptUI = () => {
   const interrupt = useLangGraphInterruptState();
@@ -110,13 +109,19 @@ export function MyAssistant() {
   });
 
   return (
-    <div className="h-full">
+    <Card className="h-full z-50 bg-white/50 backdrop-blur-sm">
       <Thread
         runtime={runtime}
         components={{ MessagesFooter: InterruptUI }}
-        assistantMessage={{ components: { Text: MarkdownComponent, ToolFallback } }}
+        assistantMessage={{
+          components: {
+            Text: ({ text, ...props }: { text: string } & React.ComponentProps<typeof MarkdownComponent>) => (
+              <MarkdownComponent {...props}>{text}</MarkdownComponent>
+            )
+          }
+        }}
       />
-    </div>
+    </Card>
   );
 }
 
