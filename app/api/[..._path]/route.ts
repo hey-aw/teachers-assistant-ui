@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-function isPreviewEnvironment() {
-  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
-}
-
 function getApiKey() {
   const apiKey = process.env.LANGSMITH_API_KEY || "";
   if (!apiKey) {
@@ -104,6 +100,17 @@ async function handleRequest(req: NextRequest, method: string) {
     const res = await fetch(apiUrl, options);
     console.log('Response status:', res.status, 'ok:', res.ok);
 
+    // Add detailed logging for streaming endpoints
+    if (isLangGraphRoute(path)) {
+      console.log('LangGraph route detected:', {
+        path,
+        method,
+        status: res.status,
+        contentType: res.headers.get('content-type'),
+        requestBody: options.body ? JSON.parse(options.body as string) : null
+      });
+    }
+
     // Check if this is a streaming response
     const contentType = res.headers.get('content-type');
     if (contentType?.includes('text/event-stream')) {
@@ -145,7 +152,28 @@ async function handleRequest(req: NextRequest, method: string) {
     // For non-2xx responses, treat as error
     if (res.status >= 400) {
       const errorMessage = responseBody?.message || responseBody?.error || "API request failed";
-      console.error('Error message:', errorMessage);
+      console.error('Error response:', {
+        status: res.status,
+        body: responseBody,
+        headers: Object.fromEntries(res.headers.entries())
+      });
+
+      // Special handling for 422 errors
+      if (res.status === 422) {
+        console.error('Validation error details:', responseBody);
+        return NextResponse.json(
+          {
+            error: errorMessage,
+            details: responseBody,
+            path: path
+          },
+          {
+            status: 422,
+            headers: getCorsHeaders(),
+          }
+        );
+      }
+
       return NextResponse.json(
         { error: errorMessage },
         {
