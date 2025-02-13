@@ -1,19 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 export const runtime = "edge";
-
-function isPreviewEnvironment() {
-  return process.env.AZURE_STATIC_WEBAPPS_ENVIRONMENT === 'preview' || !process.env.AUTH0_BASE_URL;
-}
-
-function getApiKey() {
-  const apiKey = process.env.LANGSMITH_API_KEY || "";
-  if (!apiKey) {
-    console.warn("LANGSMITH_API_KEY is not set");
-  }
-  return apiKey;
-}
 
 function getCorsHeaders() {
   return {
@@ -23,171 +10,67 @@ function getCorsHeaders() {
   };
 }
 
-function buildApiUrl(baseUrl: string, path: string, queryString: string) {
-  try {
-    console.log('buildApiUrl inputs:', { baseUrl, path, queryString });
-
-    if (!baseUrl) throw new Error('baseUrl is required');
-    if (!path) throw new Error('path is required');
-
-    const cleanBaseUrl = baseUrl.replace(/\/$/, "");
-    const cleanPath = path.replace(/^\//, "");
-
-    const url = new URL(`${cleanBaseUrl}/${cleanPath}`);
-    if (queryString) {
-      url.search = queryString;
-    }
-    return url.toString();
-  } catch (e) {
-    console.error('buildApiUrl error:', e);
-    throw e;
-  }
-}
-
-function isLangGraphRoute(pathname: string) {
-  return pathname.includes('/threads') || pathname.includes('/stream');
-}
-
 async function handleRequest(req: NextRequest, method: string) {
   try {
-    console.log('Request URL:', req.url);
-    console.log('Request pathname:', req.nextUrl.pathname);
-
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      return new NextResponse(
-        JSON.stringify({ error: "API key is not configured" }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            ...getCorsHeaders(),
-          },
-        }
-      );
-    }
-
-    const baseUrl = process.env.LANGGRAPH_API_URL;
-    if (!baseUrl) {
-      throw new Error("LANGGRAPH_API_URL is not configured");
-    }
-
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
-    console.log('Extracted path:', path);
-    const searchParams = new URLSearchParams(req.nextUrl.search);
+    const url = new URL(req.url);
+    const searchParams = new URLSearchParams(url.search);
     searchParams.delete("_path");
     searchParams.delete("nxtP_path");
     const queryString = searchParams.toString()
       ? `?${searchParams.toString()}`
       : "";
-    console.log('Query string:', queryString);
 
-    const apiUrl = buildApiUrl(baseUrl, path, queryString);
+    const apiKey = process.env["LANGSMITH_API_KEY"];
+    const apiUrl = process.env["LANGGRAPH_API_URL"] || process.env["NEXT_PUBLIC_LANGGRAPH_API_URL"];
+
+    if (!apiKey || !apiUrl) {
+      throw new Error("Missing required environment variables");
+    }
 
     const options: RequestInit = {
       method,
       headers: {
-        "X-Api-Key": apiKey,
+        "x-api-key": apiKey,
         "Content-Type": "application/json",
       },
     };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      // Get the request body if available
-      try {
-        const body = await req.text();
-        options.body = body || JSON.stringify({});
-      } catch {
-        options.body = JSON.stringify({});
-      }
+      options.body = await req.text();
     }
 
-    const res = await fetch(apiUrl, options);
-    console.log('Response status:', res.status, 'ok:', res.ok);
+    // Sanitize logging to avoid exposing sensitive data
+    console.log({
+      path,
+      method,
+      hasBody: !!options.body,
+    });
 
-    // Check if this is a streaming response
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('text/event-stream')) {
-      console.log('Handling streaming response');
-      return new NextResponse(res.body, {
-        status: res.status,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          ...getCorsHeaders(),
-        },
-      });
-    }
-
-    // For non-streaming responses, continue with JSON handling
-    // Safely get headers
-    const headers: Record<string, string> = {};
-    try {
-      for (const [key, value] of res.headers.entries()) {
-        headers[key.toLowerCase()] = value;
-      }
-    } catch (e) {
-    }
-
-    let responseBody;
-    try {
-      const text = await res.text();
-      try {
-        responseBody = JSON.parse(text);
-      } catch (e) {
-        responseBody = text;
-      }
-    } catch (e) {
-      console.error('Failed to read response:', e);
-      responseBody = null;
-    }
-
-    // For non-2xx responses, treat as error
-    if (res.status >= 400) {
-      const errorMessage = responseBody?.message || responseBody?.error || "API request failed";
-      console.error('Error message:', errorMessage);
-      return NextResponse.json(
-        { error: errorMessage },
-        {
-          status: res.status || 500,
-          statusText: res.statusText || '',
-          headers: getCorsHeaders(),
-        }
-      );
-    }
-
-    // For successful responses, pass through the response as-is
-    return NextResponse.json(
-      responseBody,
-      {
-        status: res.status || 200,
-        statusText: res.statusText || '',
-        headers: getCorsHeaders(),
-      }
+    const res = await fetch(
+      `${apiUrl}/${path}${queryString}`,
+      options
     );
-  } catch (e: any) {
-    console.error('API request error:', e);
-    let status = 500;
-    let message = e.message || 'Internal server error';
 
-    if (e.message?.includes('API key')) {
-      status = 401;
-    } else if (e.message?.includes('not found')) {
-      status = 404;
-    } else if (e.message?.toLowerCase().includes('network')) {
-      message = 'Network error';
+    if (!res.ok) {
+      const error = await res.text();
+      console.error(`API Error: ${res.status} - ${error}`);
+      throw new Error(`API request failed: ${res.statusText}`);
     }
 
-    return new NextResponse(
-      JSON.stringify({ error: message }),
-      {
-        status,
-        headers: {
-          'Content-Type': 'application/json',
-          ...getCorsHeaders(),
-        },
-      }
+    return new NextResponse(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: {
+        ...res.headers,
+        ...getCorsHeaders(),
+      },
+    });
+  } catch (e: any) {
+    console.error("Request error:", e);
+    return NextResponse.json(
+      { error: "An error occurred processing your request" },
+      { status: e.status ?? 500 }
     );
   }
 }
