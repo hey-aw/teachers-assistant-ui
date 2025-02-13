@@ -1,4 +1,4 @@
-import { createThread, getThreadState, sendMessage, createAssistant, updateState, ChatApiError } from '@/lib/chatApi';
+import { createThread, getThreadState, sendMessage, createAssistant, updateState, ChatApiError } from '@/src/lib/chatApi';
 import { Client } from '@langchain/langgraph-sdk';
 import { LangChainMessage, LangGraphCommand } from '@assistant-ui/react-langgraph';
 

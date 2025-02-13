@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import Home from '@/app/page';
+import Home from '@/src/app/page';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 // Mock useAuth hook

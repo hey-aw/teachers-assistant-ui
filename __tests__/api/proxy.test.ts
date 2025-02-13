@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GET, POST, PUT, PATCH, DELETE, OPTIONS } from '@/app/api/[..._path]/route';
+import { GET, POST, PUT, PATCH, DELETE, OPTIONS } from '@/src/app/api/[..._path]/route';
 import { getAccessToken } from '@auth0/nextjs-auth0/edge';
 
 // Mock Auth0

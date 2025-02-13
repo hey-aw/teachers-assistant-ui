@@ -16,7 +16,7 @@ import {
 import { makeMarkdownText } from "@assistant-ui/react-markdown";
 import { Button } from "./ui/button";
 
-import { createThread, getThreadState, sendMessage } from "@/lib/chatApi";
+import { createThread, getThreadState, sendMessage } from "@/src/lib/chatApi";
 import { ToolFallback } from "./tools/ToolFallback";
 
 const MarkdownComponent = makeMarkdownText() as unknown as TextContentPartComponent;

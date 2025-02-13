@@ -3,7 +3,6 @@ import {
   LangChainMessage,
   LangGraphCommand,
 } from "@assistant-ui/react-langgraph";
-
 // Custom error class for chat API errors
 export class ChatApiError extends Error {
   constructor(message: string, public originalError?: unknown) {
@@ -13,9 +12,7 @@ export class ChatApiError extends Error {
 }
 
 const createClient = () => {
-  const apiUrl =
-    process.env["NEXT_PUBLIC_LANGGRAPH_API_URL"] ||
-    new URL("/api", window.location.href).href;
+  const apiUrl = "/api"; // Update to use the proxy
   return new Client({
     apiUrl,
   });
@@ -32,9 +29,15 @@ export const createAssistant = async (graphId: string) => {
 
 export const createThread = async () => {
   const client = createClient();
+  console.log('[createThread] Debug:', {
+    apiUrl: process.env.LANGGRAPH_API_URL,
+    hasAssistantId: !!process.env.LANGGRAPH_ASSISTANT_ID,
+    hasApiKey: !!process.env.LANGSMITH_API_KEY
+  });
   try {
     return await client.threads.create();
   } catch (error) {
+    console.error('[createThread] Error details:', error);
     throw new ChatApiError('Failed to create thread', error);
   }
 };
@@ -75,9 +78,9 @@ export const sendMessage = async (params: {
   user?: { email?: string; email_verified?: boolean };
 }) => {
   const client = createClient();
-
+  const { email, email_verified } = params.user || {};
   // User ID is the email address of the user if it exists and is verified
-  const userId = params.user?.email && params.user?.email_verified ? params.user.email : undefined;
+  const userId = email && email_verified ? email : undefined;
   console.log('[sendMessage] User details:', {
     hasUser: !!params.user,
     email: params.user?.email,
@@ -92,28 +95,31 @@ export const sendMessage = async (params: {
   try {
     return await client.runs.stream(
       params.threadId,
-      process.env["NEXT_PUBLIC_LANGGRAPH_ASSISTANT_ID"]!,
+      process.env["LANGGRAPH_ASSISTANT_ID"]!,
       {
         input,
         ...(params.command && { command: params.command }),
         config: {
           configurable: {
-            user_id: userId,
+            user_id: email,
             thread_id: params.threadId
           }
         },
         streamMode: ["updates", "messages"],
       },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Enhanced error handling
     let errorMessage = `Failed to send message to thread ${params.threadId}`;
 
-    if (error.response) {
-      // Add status code and response data if available
-      errorMessage += ` (Status ${error.response.status})`;
-      if (error.response.data) {
-        errorMessage += `: ${JSON.stringify(error.response.data)}`;
+    if (error instanceof Error && 'response' in error) {
+      const response = error.response as { status?: number; data?: unknown };
+      // Add status code and response data if available 
+      if (response.status) {
+        errorMessage += ` (Status ${response.status})`;
+      }
+      if (response.data) {
+        errorMessage += `: ${JSON.stringify(response.data)}`;
       }
     }
 

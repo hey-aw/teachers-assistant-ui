@@ -1,8 +1,27 @@
-'use client';
+import { auth0 } from "../lib/auth0";
+import './globals.css';
 
-import { MyAssistant } from "@/components/MyAssistant";
+import { MyAssistant } from "./components/MyAssistant";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth0.getSession();
+
+  // If no session, show sign-up and login buttons
+  if (!session) {
+    return (
+      <main className="h-dvh w-full bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
+        <div className="flex items-center justify-center h-full gap-4">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/api/auth/login?screen_hint=signup" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Sign up
+          </a>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/api/auth/login">Login</a>
+        </div>
+      </main>
+    );
+  }
+  // If there is a session, show the assistant
   return (
     <main className="h-dvh w-full bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
       <div className="absolute inset-0">

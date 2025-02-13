@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth0 } from "../../../lib/auth0";
 
 export const runtime = "edge";
 
@@ -12,6 +13,15 @@ function getCorsHeaders() {
 
 async function handleRequest(req: NextRequest, method: string) {
   try {
+    // Verify authentication for API requests
+    const session = await auth0.getSession(req);
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401, headers: getCorsHeaders() }
+      );
+    }
+
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
     const url = new URL(req.url);
     const searchParams = new URLSearchParams(url.search);
@@ -66,11 +76,11 @@ async function handleRequest(req: NextRequest, method: string) {
         ...getCorsHeaders(),
       },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Request error:", e);
     return NextResponse.json(
       { error: "An error occurred processing your request" },
-      { status: e.status ?? 500 }
+      { status: (e instanceof Error && 'status' in e && typeof e.status === 'number' ? e.status : 500) }
     );
   }
 }

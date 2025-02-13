@@ -6,8 +6,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
+} from "../../components/ui/tooltip";
+import { Button } from "../../components/ui/button";
 
 const TooltipButton = ({ tooltip, onClick, children }: { tooltip: string; onClick: () => void; children: React.ReactNode }) => {
   return (
