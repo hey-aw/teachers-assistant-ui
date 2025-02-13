@@ -131,7 +131,7 @@ export const sendMessage = async (params: {
         ...(params.command && { command: params.command }),
         config: {
           configurable: {
-            user_id: userId,
+            user_id: params.user?.email_verified ? params.user.email : undefined,
             thread_id: params.threadId,
             assistant_id: assistantId // Explicitly include assistant_id in config
           }
