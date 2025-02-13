@@ -14,7 +14,7 @@ const eslintConfig = [
   {
     ignores: ["**/node_modules/**", ".next/**", "out/**"]
   },
-  ...compat.extends("next/core-web-vitals"),
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
