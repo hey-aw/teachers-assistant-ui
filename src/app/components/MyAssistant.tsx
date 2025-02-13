@@ -33,10 +33,10 @@ const InterruptUI = () => {
       <div className="flex flex-col gap-2 p-4 border rounded-lg bg-gray-50">
         <div className="text-lg font-medium">Interrupt: {interrupt.value}</div>
         <div className="flex items-end gap-2">
-          <Button onClick={() => sendCommand({ resume: "yes", type: "authorization" })} variant="default">
+          <Button onClick={() => sendCommand({ resume: "yes" })} variant="default">
             Yes
           </Button>
-          <Button onClick={() => sendCommand({ resume: "no", type: "authorization" })} variant="outline">
+          <Button onClick={() => sendCommand({ resume: "no" })} variant="outline">
             No
           </Button>
         </div>
@@ -64,7 +64,7 @@ const InterruptUI = () => {
           Open URL
         </Button>
         <Button
-          onClick={() => sendCommand({ resume: 'no', type: 'authorization' })}
+          onClick={() => sendCommand({ resume: 'no' })}
           variant="outline"
         >
           Cancel
