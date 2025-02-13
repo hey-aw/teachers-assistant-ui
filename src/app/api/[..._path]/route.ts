@@ -66,11 +66,11 @@ async function handleRequest(req: NextRequest, method: string) {
         ...getCorsHeaders(),
       },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Request error:", e);
     return NextResponse.json(
       { error: "An error occurred processing your request" },
-      { status: e.status ?? 500 }
+      { status: 500 }
     );
   }
 }

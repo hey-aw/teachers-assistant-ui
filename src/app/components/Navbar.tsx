@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
-
+import ProfileButton from './ProfileButton';
 export default function Navbar() {
-    const { t, i18n } = useTranslation();
+    // const { t, i18n } = useTranslation();
 
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-    };
+    // const changeLanguage = (lng: string) => {
+    //     i18n.changeLanguage(lng);
+    // };
 
     return (
         <nav className="fixed top-0 left-0 right-0 h-[60px] bg-white/80 backdrop-blur-sm border-b border-gray-200/50 z-50 flex items-center px-4">
@@ -20,13 +19,17 @@ export default function Navbar() {
                 </div>
                 <div className="flex items-center gap-4">
                     <div>
-                        <button onClick={() => changeLanguage('en')} className="px-2 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
+                        {/* TODO: Add language support */}
+                        {/* <button onClick={() => changeLanguage('en')} className="px-2 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500">
                             {t('english')}
                         </button>
                         <button onClick={() => changeLanguage('es')} className="px-2 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500 ml-2">
                             {t('spanish')}
-                        </button>
+                        </button> */}
                     </div>
+                </div>
+                <div className="z-50">
+                    <ProfileButton />
                 </div>
             </div>
         </nav>
