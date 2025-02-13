@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Client } from "@langchain/langgraph-sdk";
 
 export const runtime = "edge";
 
@@ -6,8 +7,7 @@ function debugEnvironment() {
   const envVars = {
     LANGGRAPH_API_URL: process.env.LANGGRAPH_API_URL ? 'Set' : 'Missing',
     LANGSMITH_API_KEY: process.env.LANGSMITH_API_KEY ? 'Set' : 'Missing',
-    NODE_ENV: process.env.NODE_ENV,
-    VERCEL_ENV: process.env.VERCEL_ENV,
+    NODE_ENV: process.env.NODE_ENV
   };
 
   console.log('Environment configuration:', envVars);
@@ -63,6 +63,24 @@ function isLangGraphRoute(pathname: string) {
   return pathname.includes('/threads') || pathname.includes('/stream');
 }
 
+function createClient() {
+  const apiUrl = process.env.LANGGRAPH_API_URL;
+  const apiKey = process.env.LANGSMITH_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("LANGSMITH_API_KEY is not configured");
+  }
+
+  if (!apiUrl) {
+    throw new Error("LANGGRAPH_API_URL is not configured");
+  }
+
+  return new Client({
+    apiUrl,
+    apiKey,
+  });
+}
+
 async function handleRequest(req: NextRequest, method: string) {
   try {
     console.log('Request URL:', req.url);
@@ -72,27 +90,7 @@ async function handleRequest(req: NextRequest, method: string) {
     // Add debug information
     debugEnvironment();
 
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      console.error('Authentication failed: Missing API key');
-      return new NextResponse(
-        JSON.stringify({ error: "API key is not configured" }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            ...getCorsHeaders(),
-          },
-        }
-      );
-    }
-
-    const baseUrl = process.env.LANGGRAPH_API_URL;
-    if (!baseUrl) {
-      console.error('Configuration error: Missing LANGGRAPH_API_URL');
-      throw new Error("LANGGRAPH_API_URL is not configured");
-    }
-
+    const client = createClient();
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
     console.log('Extracted path:', path);
     const searchParams = new URLSearchParams(req.nextUrl.search);
@@ -103,215 +101,98 @@ async function handleRequest(req: NextRequest, method: string) {
       : "";
     console.log('Query string:', queryString);
 
-    const apiUrl = buildApiUrl(baseUrl, path, queryString);
-    console.log('Full API URL:', apiUrl);
-
-    const options: RequestInit = {
-      method,
-      headers: {
-        "X-Api-Key": apiKey,
-        "Content-Type": "application/json",
-      },
-    };
-
     let requestBody = null;
     if (["POST", "PUT", "PATCH"].includes(method)) {
       try {
         const body = await req.text();
-        requestBody = body || "{}";
-        options.body = requestBody;
+        requestBody = body ? JSON.parse(body) : {};
         console.log('Request body:', {
           path,
           method,
-          body: JSON.parse(requestBody)
+          body: requestBody
         });
       } catch (e) {
         console.error('Error parsing request body:', e);
-        options.body = JSON.stringify({});
-      }
-    }
-
-    console.log('Making API request to:', {
-      url: apiUrl,
-      method,
-      headers: options.headers,
-      bodyLength: typeof options.body === 'string' ? options.body.length : 'unknown'
-    });
-
-    const res = await fetch(apiUrl, options);
-    console.log('API Response:', {
-      status: res.status,
-      ok: res.ok,
-      statusText: res.statusText,
-      headers: Object.fromEntries(res.headers.entries())
-    });
-
-    // Add detailed logging for streaming endpoints
-    if (isLangGraphRoute(path)) {
-      console.log('LangGraph route detected:', {
-        path,
-        method,
-        status: res.status,
-        contentType: res.headers.get('content-type'),
-        requestBody: requestBody ? JSON.parse(requestBody) : null
-      });
-    }
-
-    // Check if this is a streaming response
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('text/event-stream')) {
-      console.log('Handling streaming response');
-      return new NextResponse(res.body, {
-        status: res.status,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          ...getCorsHeaders(),
-        },
-      });
-    }
-
-    // For non-streaming responses, continue with JSON handling
-    // Safely get headers
-    const headers: Record<string, string> = {};
-    try {
-      for (const [key, value] of res.headers.entries()) {
-        headers[key.toLowerCase()] = value;
-      }
-    } catch (e) {
-    }
-
-    let responseBody;
-    try {
-      const text = await res.text();
-      try {
-        responseBody = JSON.parse(text);
-      } catch (e) {
-        responseBody = text;
-      }
-    } catch (e) {
-      console.error('Failed to read response:', e);
-      responseBody = null;
-    }
-
-    // For non-2xx responses, treat as error
-    if (res.status >= 400) {
-      const errorMessage = responseBody?.message || responseBody?.error || "API request failed";
-      console.error('API Error:', {
-        status: res.status,
-        statusText: res.statusText,
-        url: apiUrl,
-        requestBody: requestBody ? JSON.parse(requestBody) : null,
-        responseBody,
-        headers: Object.fromEntries(res.headers.entries())
-      });
-
-      // Handle permission errors (401, 403)
-      if (res.status === 401 || res.status === 403) {
-        console.error('Permission error:', {
-          status: res.status,
-          message: errorMessage,
-          path
-        });
         return NextResponse.json(
-          {
-            error: "You do not have permission to access this resource",
-            details: {
-              message: errorMessage,
-              path,
-              status: res.status
-            }
-          },
-          {
-            status: res.status,
-            headers: getCorsHeaders(),
-          }
+          { error: "Invalid JSON in request body" },
+          { status: 400, headers: getCorsHeaders() }
         );
       }
+    }
 
-      // Handle server errors (500)
-      if (res.status === 500) {
-        console.error('Server error:', {
-          message: errorMessage,
-          path,
-          responseBody
-        });
-        return NextResponse.json(
-          {
-            error: "An internal server error occurred",
-            details: {
-              message: errorMessage,
-              path,
-              status: 500
-            }
-          },
-          {
-            status: 500,
-            headers: getCorsHeaders(),
-          }
-        );
+    let response;
+    const pathParts = path.split('/');
+
+    // Handle different API endpoints using the SDK
+    if (path.startsWith('threads')) {
+      if (method === 'POST') {
+        response = await client.threads.create(requestBody || {});
+      } else if (method === 'GET' && pathParts.length > 1) {
+        response = await client.threads.get(pathParts[1]);
+      } else if (method === 'GET') {
+        response = await client.threads.search(requestBody || {});
       }
+    } else if (path.startsWith('runs/stream')) {
+      if (method === 'POST') {
+        const { threadId, assistantId, input, config, streamMode } = requestBody || {};
 
-      // Special handling for 502 errors
-      if (res.status === 502) {
-        return NextResponse.json(
-          {
-            error: "Unable to connect to LangGraph API server",
-            details: {
-              message: errorMessage,
-              path,
-              status: res.status
-            }
-          },
-          {
-            status: 502,
-            headers: getCorsHeaders(),
-          }
-        );
-      }
-
-      // Special handling for 422 errors
-      if (res.status === 422) {
-        console.error('Validation error details:', responseBody);
-        return NextResponse.json(
-          {
-            error: errorMessage,
-            details: responseBody,
-            path: path
-          },
-          {
-            status: 422,
-            headers: getCorsHeaders(),
-          }
-        );
-      }
-
-      return NextResponse.json(
-        { error: errorMessage },
-        {
-          status: res.status || 500,
-          statusText: res.statusText || '',
-          headers: getCorsHeaders(),
+        if (!threadId || !assistantId) {
+          return NextResponse.json(
+            { error: "threadId and assistantId are required" },
+            { status: 400, headers: getCorsHeaders() }
+          );
         }
+
+        const stream = await client.runs.stream(threadId, assistantId, {
+          input,
+          config,
+          streamMode: streamMode || ["updates", "messages"],
+        });
+
+        // Convert AsyncGenerator to ReadableStream
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of stream) {
+                controller.enqueue(new TextEncoder().encode(JSON.stringify(chunk) + '\n'));
+              }
+              controller.close();
+            } catch (e) {
+              controller.error(e);
+            }
+          }
+        });
+
+        return new NextResponse(readableStream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            ...getCorsHeaders(),
+          },
+        });
+      }
+    }
+
+    if (!response) {
+      return NextResponse.json(
+        { error: "Endpoint not found" },
+        { status: 404, headers: getCorsHeaders() }
       );
     }
 
-    // For successful responses, pass through the response as-is
-    return NextResponse.json(
-      responseBody,
-      {
-        status: res.status || 200,
-        statusText: res.statusText || '',
-        headers: getCorsHeaders(),
-      }
-    );
+    return NextResponse.json(response, {
+      status: 200,
+      headers: getCorsHeaders(),
+    });
+
   } catch (e: any) {
     console.error('API request error:', {
       error: e,
       message: e.message,
       stack: e.stack
     });
+
     let status = 500;
     let message = e.message || 'Internal server error';
 
